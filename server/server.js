@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import userRoutes from "./routes/userRoutes.js";
+import { protect } from "./middleware/authMiddleware.js";
 
 dotenv.config();
 
@@ -20,6 +21,10 @@ mongoose.connect(process.env.MONGO_URI)
   });
   
 app.use("/api/users",userRoutes);
+
+app.get("/api/protected", protect ,(req,res)=>{
+  res.json({message:"Access granted",user:req.user});
+})
 
 app.get("/", (req, res) => {
   res.send("API RUNNING...");

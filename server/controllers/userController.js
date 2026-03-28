@@ -1,5 +1,5 @@
 import User from "../models/userModel.js";
-
+import generateToken from "../utils/generateToken.js";
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -40,9 +40,10 @@ export const registerUser = async (req, res) => {
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
+        token:generateToken(user._id),
       });
     } else {
-      (res.status(400), json({ message: "Invalid user data." }));
+      res.status(400), json({ message: "Invalid user data." });
     }
   } catch (error) {
     console.error(error);
@@ -65,6 +66,7 @@ export const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
+        token:generateToken(user._id),
       });
     } else {
       res.status(401).json({

@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import userRoutes from "./routes/userRoutes.js";
 import { protect } from "./middleware/authMiddleware.js";
 import productRoutes from "./routes/productRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
 
 dotenv.config();
 
@@ -24,6 +25,8 @@ mongoose.connect(process.env.MONGO_URI)
 app.use("/api/users",userRoutes);
 
 app.use("/api/products",productRoutes);
+
+app.use("/api/orders",orderRoutes);
 
 app.get("/api/protected", protect ,(req,res)=>{
   res.json({message:"Access granted",user:req.user});

@@ -74,7 +74,7 @@ function Home() {
           ].map((cat) => (
             <div
               key={cat.name}
-              onClick={() => navigate(`/category/${cat.slug}`)}
+              onClick={() => navigate(`/products?category=${cat.slug}`)}
               className="relative rounded-xl overflow-hidden cursor-pointer group shadow-md hover:shadow-xl transition duration-300"
             >
               {/* IMAGE */}
@@ -118,7 +118,7 @@ function Home() {
         </div>
 
         {/* 🔘 BUTTON */}
-        <div className="flex justify-center mt-12 hover:shadow-md">
+        <div className="flex justify-center mt-12 ">
           <Link
             to="/products"
             className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition group"

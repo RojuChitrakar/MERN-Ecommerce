@@ -1,35 +1,30 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import {
-  Menu,
-  X,
-  Heart,
-  ShoppingCart,
-  User,
-  ChevronDown,
-} from "lucide-react";
+import { Menu, X, Heart, ShoppingCart, User, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const categories = [
-  "electronics",
-  "home",
-  "beauty",
-  "clothing",
-  "others",
-];
+const categories = ["electronics", "home", "beauty", "clothing", "others"];
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
 
+  const [search, setSearch] = useState("");
+  const navigate = useNavigate();
+
+  const handleSearch = (e) => {
+    if (e.key === "Enter" && search.trim() !== "") {
+      navigate(`/products?search=${search}`);
+    }
+  };
   const navLinkClass = ({ isActive }) =>
     isActive
       ? "text-blue-600 font-semibold"
       : "text-gray-700 hover:text-blue-600";
 
   return (
-    <nav className="bg-white shadow-sm border-b w-full">
+    <nav className="sticky top-0 z-50 bg-white shadow-sm border-b w-full">
       <div className="w-full px-8 py-3 flex items-center justify-between">
-
         {/* LEFT */}
         <div className="flex items-center gap-12">
           <NavLink to="/" className="text-2xl font-bold text-blue-600">
@@ -37,7 +32,6 @@ function Navbar() {
           </NavLink>
 
           <div className="hidden md:flex items-center gap-6">
-
             <NavLink to="/" className={navLinkClass}>
               Home
             </NavLink>
@@ -60,7 +54,8 @@ function Navbar() {
                   {categories.map((cat) => (
                     <NavLink
                       key={cat}
-                      to={`/category/${cat}`}
+                      to={`/products?category=${cat}`}
+                      onClick={() => setCategoryOpen(false)}
                       className={({ isActive }) =>
                         `block px-4 py-2 capitalize ${
                           isActive
@@ -84,6 +79,9 @@ function Navbar() {
             type="text"
             placeholder="Search products..."
             className="w-full border rounded-full px-4 py-2"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={handleSearch}
           />
         </div>
 
@@ -118,7 +116,6 @@ function Navbar() {
 
         {/* CONTENT */}
         <div className="p-4 space-y-4">
-
           {/* SEARCH */}
           <input
             type="text"
@@ -128,7 +125,6 @@ function Navbar() {
 
           {/* LINKS */}
           <div className="flex flex-col gap-4 mt-4">
-
             <NavLink
               to="/"
               onClick={() => setMenuOpen(false)}
@@ -153,7 +149,7 @@ function Navbar() {
             {categories.map((cat) => (
               <NavLink
                 key={cat}
-                to={`/category/${cat}`}
+                to={`/products?category=${cat}`}
                 onClick={() => setMenuOpen(false)}
                 className={({ isActive }) =>
                   `capitalize px-2 py-1 rounded transition ${
@@ -169,10 +165,7 @@ function Navbar() {
 
             <hr />
 
-            <p className="hover:text-blue-600 cursor-pointer">
-              My Profile
-            </p>
-
+            <p className="hover:text-blue-600 cursor-pointer">My Profile</p>
           </div>
         </div>
       </div>

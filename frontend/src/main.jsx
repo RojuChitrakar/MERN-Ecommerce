@@ -5,11 +5,14 @@ import "./index.css";
 
 import { BrowserRouter } from "react-router-dom";
 import { WishlistProvider } from "./context/WishlistContext";
+import { CartProvider } from "./context/CartContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <WishlistProvider>
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
-  </WishlistProvider>
+    <CartProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </CartProvider>
+  </WishlistProvider>,
 );

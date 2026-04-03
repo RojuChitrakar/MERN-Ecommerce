@@ -4,6 +4,8 @@ import { Menu, X, Heart, ShoppingCart, User, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useWishlist } from "../context/WishlistContext";
+import { useCart } from "../context/CartContext";
+
 const categories = ["electronics", "home", "beauty", "clothing", "others"];
 
 function Navbar() {
@@ -12,7 +14,7 @@ function Navbar() {
 
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
-
+  const { cart } = useCart();
   const { wishlist } = useWishlist();
   const handleSearch = (e) => {
     if (e.key === "Enter" && search.trim() !== "") {
@@ -99,7 +101,15 @@ function Navbar() {
               </span>
             )}
           </Link>
-          <ShoppingCart className="cursor-pointer hover:text-blue-600" />
+          <Link to="/cart" className="relative">
+            <ShoppingCart className="cursor-pointer" />
+
+            {cart.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-1.5 rounded-full">
+                {cart.length}
+              </span>
+            )}
+          </Link>
         </div>
 
         {/* MOBILE BUTTON */}

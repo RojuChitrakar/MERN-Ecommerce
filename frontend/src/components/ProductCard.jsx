@@ -1,7 +1,7 @@
 // import { Heart, ShoppingCart } from "lucide-react";
 
 // function ProductCard({ product }) {
-  
+
 //   return (
 //     <div className="bg-white rounded-xl shadow-sm overflow-hidden group transition duration-300 hover:shadow-xl hover:-translate-y-2">
 
@@ -60,15 +60,16 @@
 
 import { Heart, ShoppingCart } from "lucide-react";
 import { useWishlist } from "../context/WishlistContext";
+import { useCart } from "../context/CartContext";
 
 function ProductCard({ product }) {
   const { toggleWishlist, isInWishlist } = useWishlist();
 
   const liked = isInWishlist(product.id);
+  const { addToCart } = useCart();
 
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden group hover:shadow-xl transition">
-
       {/* IMAGE */}
       <div className="relative">
         <img
@@ -93,9 +94,7 @@ function ProductCard({ product }) {
 
       {/* DETAILS */}
       <div className="p-4">
-        <p className="text-sm text-gray-500 capitalize">
-          {product.category}
-        </p>
+        <p className="text-sm text-gray-500 capitalize">{product.category}</p>
 
         <h3 className="font-semibold">{product.name}</h3>
 
@@ -106,7 +105,11 @@ function ProductCard({ product }) {
         <div className="flex justify-between items-center mt-3">
           <span className="font-bold">${product.price}</span>
 
-          <button className="bg-blue-600 text-white px-3 py-1 rounded">
+          <button
+            onClick={() => addToCart(product)}
+            className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-700"
+          >
+            <ShoppingCart size={14} />
             Add
           </button>
         </div>

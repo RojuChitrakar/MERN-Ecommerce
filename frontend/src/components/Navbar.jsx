@@ -2,7 +2,8 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Menu, X, Heart, ShoppingCart, User, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import { Link } from "react-router-dom";
+import { useWishlist } from "../context/WishlistContext";
 const categories = ["electronics", "home", "beauty", "clothing", "others"];
 
 function Navbar() {
@@ -12,6 +13,7 @@ function Navbar() {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
+  const { wishlist } = useWishlist();
   const handleSearch = (e) => {
     if (e.key === "Enter" && search.trim() !== "") {
       navigate(`/products?search=${search}`);
@@ -23,7 +25,7 @@ function Navbar() {
       : "text-gray-700 hover:text-blue-600";
 
   return (
-    <nav className="sticky top-0 z-50 bg-white shadow-sm border-b w-full">
+    <nav className="sticky top-0 z-50 bg-white shadow-sm border-b w-full ">
       <div className="w-full px-8 py-3 flex items-center justify-between">
         {/* LEFT */}
         <div className="flex items-center gap-12">
@@ -88,7 +90,15 @@ function Navbar() {
         {/* RIGHT */}
         <div className="hidden md:flex items-center gap-6 pr-2">
           <User className="cursor-pointer hover:text-blue-600" />
-          <Heart className="cursor-pointer hover:text-blue-600" />
+          <Link to="/wishlist" className="relative">
+            <Heart className="cursor-pointer hover:text-blue-600" size={22} />
+
+            {wishlist.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 rounded-full">
+                {wishlist.length}
+              </span>
+            )}
+          </Link>
           <ShoppingCart className="cursor-pointer hover:text-blue-600" />
         </div>
 

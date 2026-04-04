@@ -123,7 +123,7 @@ function Navbar() {
         </div>
       </div>
 
-      {/* 📱 SIDE DRAWER */}
+      {/*  SIDE DRAWER */}
       <div
         className={`fixed top-0 left-0 h-full w-72 bg-white shadow-lg z-50 transform ${
           menuOpen ? "translate-x-0" : "-translate-x-full"

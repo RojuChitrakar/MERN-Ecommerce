@@ -36,6 +36,15 @@ function AllProducts() {
     }
   }, [categoryFromURL, searchFromURL]);
 
+  useEffect(() => {
+  if (
+    location.state?.from === "footer" ||
+    location.state?.from === "home"
+  ) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+}, [location]);
+
   // 🔍 FILTER LOGIC (UPDATED 🔥)
   const filteredProducts = products.filter((p) => {
     const searchText = search.toLowerCase();
@@ -45,8 +54,7 @@ function AllProducts() {
       p.description.toLowerCase().includes(searchText); // 🔥 NEW
 
     const matchCategory =
-      category === "all" ||
-      p.category.toLowerCase() === category.toLowerCase();
+      category === "all" || p.category.toLowerCase() === category.toLowerCase();
 
     let matchPrice = true;
     if (price === "under50") matchPrice = p.price < 50;
@@ -73,11 +81,8 @@ function AllProducts() {
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-6 py-10">
-
         {/* HEADER */}
-        <h1 className="text-3xl font-bold mb-2">
-          All Products
-        </h1>
+        <h1 className="text-3xl font-bold mb-2">All Products</h1>
 
         <p className="text-gray-500 mb-6">
           Showing {sortedProducts.length} products
@@ -85,7 +90,6 @@ function AllProducts() {
 
         {/* TOP BAR */}
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center gap-2 border px-4 py-2 rounded-lg hover:bg-gray-100"
@@ -95,7 +99,6 @@ function AllProducts() {
           </button>
 
           <div className="flex gap-4">
-
             <input
               type="text"
               placeholder="Search products..."
@@ -113,20 +116,26 @@ function AllProducts() {
               <option value="low">Price: Low to High</option>
               <option value="high">Price: High to Low</option>
             </select>
-
           </div>
         </div>
 
         {/* FILTER PANEL */}
         {showFilters && (
           <div className="bg-white p-6 rounded-xl shadow mb-6 grid md:grid-cols-2 gap-10">
-
             {/* CATEGORY */}
             <div>
               <h3 className="font-semibold mb-3">Category</h3>
 
               <div className="flex flex-wrap gap-3">
-                {["all","electronics","fashion","clothing","home","beauty","others"].map((cat) => (
+                {[
+                  "all",
+                  "electronics",
+                  "fashion",
+                  "clothing",
+                  "home",
+                  "beauty",
+                  "others",
+                ].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => {
@@ -168,7 +177,6 @@ function AllProducts() {
                 ))}
               </div>
             </div>
-
           </div>
         )}
 
@@ -184,7 +192,6 @@ function AllProducts() {
             ))}
           </div>
         )}
-
       </div>
     </div>
   );

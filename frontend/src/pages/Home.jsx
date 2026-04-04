@@ -74,7 +74,11 @@ function Home() {
           ].map((cat) => (
             <div
               key={cat.name}
-              onClick={() => navigate(`/products?category=${cat.slug}`)}
+              onClick={() =>
+                navigate(`/products?category=${cat.slug}`, {
+                  state: { from: "home" }, 
+                })
+              }
               className="relative rounded-xl overflow-hidden cursor-pointer group shadow-md hover:shadow-xl transition duration-300"
             >
               {/* IMAGE */}

@@ -91,7 +91,10 @@ function Navbar() {
 
         {/* RIGHT */}
         <div className="hidden md:flex items-center gap-6 pr-2">
+          <Link to="/profile" className="cursor-pointer hover:text-blue-600">
           <User className="cursor-pointer hover:text-blue-600" />
+          </Link>
+    
           <Link to="/wishlist" className="relative">
             <Heart className="cursor-pointer hover:text-blue-600" size={22} />
 

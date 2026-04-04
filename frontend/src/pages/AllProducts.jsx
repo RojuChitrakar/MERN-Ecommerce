@@ -16,12 +16,12 @@ function AllProducts() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // 🔥 GET FROM URL
+  //  GET FROM URL
   const queryParams = new URLSearchParams(location.search);
   const categoryFromURL = queryParams.get("category");
   const searchFromURL = queryParams.get("search");
 
-  // 🔥 SYNC CATEGORY + SEARCH
+  //  SYNC CATEGORY + SEARCH
   useEffect(() => {
     if (categoryFromURL) {
       setCategory(categoryFromURL.toLowerCase());
@@ -45,13 +45,13 @@ function AllProducts() {
   }
 }, [location]);
 
-  // 🔍 FILTER LOGIC (UPDATED 🔥)
+  // 🔍 FILTER LOGIC (UPDATED )
   const filteredProducts = products.filter((p) => {
     const searchText = search.toLowerCase();
 
     const matchSearch =
       p.name.toLowerCase().includes(searchText) ||
-      p.description.toLowerCase().includes(searchText); // 🔥 NEW
+      p.description.toLowerCase().includes(searchText); //  NEW
 
     const matchCategory =
       category === "all" || p.category.toLowerCase() === category.toLowerCase();
@@ -65,7 +65,7 @@ function AllProducts() {
     return matchSearch && matchCategory && matchPrice;
   });
 
-  // 🔽 SORT
+  //  SORT
   let sortedProducts = [...filteredProducts];
 
   if (sort === "low") {

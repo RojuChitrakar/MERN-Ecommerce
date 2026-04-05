@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
-
+import { useAuth } from "../context/AuthContext";
 const categories = ["electronics", "home", "beauty", "clothing", "others"];
 
 function Navbar() {
@@ -25,7 +25,7 @@ function Navbar() {
     isActive
       ? "text-blue-600 font-semibold"
       : "text-gray-700 hover:text-blue-600";
-
+  const { user } = useAuth();
   return (
     <nav className="sticky top-0 z-50 bg-white shadow-sm border-b w-full ">
       <div className="w-full px-8 py-3 flex items-center justify-between">
@@ -91,10 +91,21 @@ function Navbar() {
 
         {/* RIGHT */}
         <div className="hidden md:flex items-center gap-6 pr-2">
-          <Link to="/profile" className="cursor-pointer hover:text-blue-600">
-          <User className="cursor-pointer hover:text-blue-600" />
-          </Link>
-    
+          {user ? (
+            <Link
+              to="/profile"
+              className="flex items-center gap-2 hover:text-blue-600"
+            >
+              <User size={20} />
+              <span className="text-sm">
+                {user?.fullName || user?.email || "Profile"}
+              </span>
+            </Link>
+          ) : (
+            <Link to="/login" className="text-sm hover:text-blue-600">
+              Login / Signup
+            </Link>
+          )}
           <Link to="/wishlist" className="relative">
             <Heart className="cursor-pointer hover:text-blue-600" size={22} />
 

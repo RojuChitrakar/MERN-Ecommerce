@@ -2,6 +2,8 @@ import Navbar from "../components/Navbar";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { User, Mail, Phone, MapPin, Package } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 function Profile() {
   const [user, setUser] = useState({
@@ -40,6 +42,14 @@ function Profile() {
   });
 
   const [isEditingAddress, setIsEditingAddress] = useState(true);
+
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -210,7 +220,12 @@ function Profile() {
                 Shopping Cart
               </Link>
 
-              <button className="text-red-500 mt-2">Logout</button>
+              <button
+                onClick={handleLogout}
+                className="text-red-500 mt-2 hover:underline"
+              >
+                Logout
+              </button>
             </div>
           </div>
 

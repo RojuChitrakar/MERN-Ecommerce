@@ -6,12 +6,15 @@ import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { WishlistProvider } from "./context/WishlistContext";
 import { CartProvider } from "./context/CartContext";
+import { AuthProvider } from "./context/AuthContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <WishlistProvider>
     <CartProvider>
       <BrowserRouter>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </BrowserRouter>
     </CartProvider>
   </WishlistProvider>,

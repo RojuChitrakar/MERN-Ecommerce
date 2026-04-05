@@ -5,6 +5,9 @@ import Wishlist from "./pages/Wishlist.jsx";
 import Cart from "./pages/Cart.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
 import Profile from "./pages/Profile.jsx";
+import Login from "./pages/Login.jsx";
+import Register from "./pages/Register.jsx";
+import Checkout from "./pages/Checkout.jsx";
 function App() {
   return (
     <Routes>
@@ -16,7 +19,10 @@ function App() {
         path="/product/:id"
         element={<ProductPage key={window.location.pathname} />}
       />
-      <Route path="/profile" element={<Profile/>}/>
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/checkout" element={<Checkout />} />
     </Routes>
   );
 }

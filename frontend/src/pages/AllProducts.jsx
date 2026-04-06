@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import ProductCard from "../components/ProductCard";
-import productsData from "../data/products";
+import { fetchProducts } from "../api/productApi";
 import { Filter } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 function AllProducts() {
-  const [products] = useState(productsData);
+  const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [price, setPrice] = useState("all");
   const [sort, setSort] = useState("featured");
   const [showFilters, setShowFilters] = useState(false);
-
+  const [loading, setLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -37,43 +37,48 @@ function AllProducts() {
   }, [categoryFromURL, searchFromURL]);
 
   useEffect(() => {
-  if (
-    location.state?.from === "footer" ||
-    location.state?.from === "home"
-  ) {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-}, [location]);
+    if (location.state?.from === "footer" || location.state?.from === "home") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [location]);
 
-  // 🔍 FILTER LOGIC (UPDATED )
-  const filteredProducts = products.filter((p) => {
-    const searchText = search.toLowerCase();
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
 
-    const matchSearch =
-      p.name.toLowerCase().includes(searchText) ||
-      p.description.toLowerCase().includes(searchText); //  NEW
+        const data = await fetchProducts({
+          keyword: search,
+          category: category !== "all" ? category : "",
+          sort,
+          minPrice,
+          maxPrice,
+        });
 
-    const matchCategory =
-      category === "all" || p.category.toLowerCase() === category.toLowerCase();
+        setProducts(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    let matchPrice = true;
-    if (price === "under50") matchPrice = p.price < 50;
-    if (price === "50-100") matchPrice = p.price >= 50 && p.price <= 100;
-    if (price === "100-200") matchPrice = p.price > 100 && p.price <= 200;
-    if (price === "200+") matchPrice = p.price > 200;
+    loadProducts();
+  }, [search, category, sort, price]);
 
-    return matchSearch && matchCategory && matchPrice;
-  });
+  let minPrice = "";
+  let maxPrice = "";
 
-  //  SORT
-  let sortedProducts = [...filteredProducts];
-
-  if (sort === "low") {
-    sortedProducts.sort((a, b) => a.price - b.price);
-  }
-
-  if (sort === "high") {
-    sortedProducts.sort((a, b) => b.price - a.price);
+  if (price === "under50") {
+    maxPrice = 50;
+  } else if (price === "50-100") {
+    minPrice = 50;
+    maxPrice = 100;
+  } else if (price === "100-200") {
+    minPrice = 100;
+    maxPrice = 200;
+  } else if (price === "200+") {
+    minPrice = 200;
   }
 
   return (
@@ -84,9 +89,7 @@ function AllProducts() {
         {/* HEADER */}
         <h1 className="text-3xl font-bold mb-2">All Products</h1>
 
-        <p className="text-gray-500 mb-6">
-          Showing {sortedProducts.length} products
-        </p>
+        <p className="text-gray-500 mb-6">Showing {products.length} products</p>
 
         {/* TOP BAR */}
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
@@ -181,14 +184,14 @@ function AllProducts() {
         )}
 
         {/* PRODUCTS */}
-        {sortedProducts.length === 0 ? (
-          <p className="text-center text-gray-500 mt-10">
-            No products found 😔
-          </p>
+        {loading ? (
+          <p className="text-center text-gray-500">Loading products...</p>
+        ) : products.length === 0 ? (
+          <p className="text-center text-gray-500">No products found</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {sortedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {products.map((product) => (
+              <ProductCard key={product._id} product={product} />
             ))}
           </div>
         )}

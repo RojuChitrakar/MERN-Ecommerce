@@ -3,13 +3,26 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
-import products from "../data/products";
 import ProductCard from "../components/ProductCard";
+import { useState, useEffect } from "react";
+import { fetchProducts } from "../api/productApi";
 
 function Home() {
   const navigate = useNavigate();
-
+  const [products, setProducts] = useState([]);
   const featured = products.slice(0, 8);
+  useEffect(() => {
+  const loadProducts = async () => {
+    try {
+      const data = await fetchProducts();
+      setProducts(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  loadProducts();
+}, []);
   return (
     <div className="bg-gray-100 min-h-screen">
       {/* 🔵 NAVBAR */}
@@ -117,7 +130,7 @@ function Home() {
         {/* 🟡 GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {featured.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product._id} product={product} />
           ))}
         </div>
 

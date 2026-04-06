@@ -8,7 +8,7 @@ const reviewSchema= new mongoose.Schema(
     },
     name:String,
     rating:Number,
-    comment:string,
+    comment:String,
   },
   {timestamps:true}
 );

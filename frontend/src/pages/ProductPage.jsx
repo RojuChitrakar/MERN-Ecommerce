@@ -1,11 +1,11 @@
 import { useParams } from "react-router-dom";
-import products from "../data/products";
 import Navbar from "../components/Navbar";
 import { useState, useEffect, useRef } from "react";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { Heart, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
+import { fetchProductById } from "../api/productApi";
 
 function ProductPage() {
   const reviewRef = useRef(null);
@@ -13,8 +13,7 @@ function ProductPage() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]); // ✅ ADD id
-
-  const product = products.find((p) => String(p.id) === String(id));
+  const [product, setProduct] = useState(null);
 
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
@@ -23,7 +22,13 @@ function ProductPage() {
   const [showAllReviews, setShowAllReviews] = useState(false);
 
   const [showForm, setShowForm] = useState(false);
-  const [reviews, setReviews] = useState(product.reviewsData || []);
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    if (product?.reviewsData) {
+      setReviews(product.reviewsData);
+    }
+  }, [product]);
 
   const [newReview, setNewReview] = useState({
     name: "",
@@ -48,20 +53,38 @@ function ProductPage() {
       comment: "",
     });
   };
-  if (!product) {
-    return <h1>Product not found</h1>;
-  }
-
-  const liked = isInWishlist(product.id);
 
   // ⭐ LIMIT REVIEWS
   const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 5);
 
   // 🔥 RELATED PRODUCTS
-  const related = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
+  const related = [];
 
+  useEffect(() => {
+    const loadProduct = async () => {
+      try {
+        const data = await fetchProductById(id);
+        setProduct(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadProduct();
+  }, [id]);
+
+  if (!product) {
+    return <h1>Loading...</h1>;
+  }
+  const totalReviews = reviews.length;
+
+  const averageRating =
+    totalReviews > 0
+      ? (
+          reviews.reduce((acc, item) => acc + item.rating, 0) / totalReviews
+        ).toFixed(1)
+      : 0;
+  const liked = product ? isInWishlist(product._id) : false;
   return (
     <div className="bg-gray-50 min-h-screen">
       <Navbar />
@@ -85,7 +108,7 @@ function ProductPage() {
 
             {/* RATING */}
             <p className="text-yellow-500 mt-2">
-              ⭐ {product.rating} ({product.reviews} reviews)
+              ⭐ {averageRating} ({totalReviews} reviews)
             </p>
 
             {/* PRICE */}
@@ -166,7 +189,10 @@ function ProductPage() {
             </button>
           </div>
           {showForm && (
-            <div ref={reviewRef} className="bg-white p-5 rounded-lg shadow mt-6">
+            <div
+              ref={reviewRef}
+              className="bg-white p-5 rounded-lg shadow mt-6"
+            >
               <h3 className="font-semibold mb-3">Write a Review</h3>
 
               <input
@@ -225,7 +251,7 @@ function ProductPage() {
           </div>
 
           {/* SHOW ALL BUTTON */}
-          {product.reviewsData?.length > 5 && (
+          {product?.reviewsData?.length > 5 && (
             <button
               onClick={() => setShowAllReviews(!showAllReviews)}
               className="mt-4 text-blue-600"
@@ -241,7 +267,7 @@ function ProductPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {related.map((item) => (
-              <Link to={`/product/${item.id}`}>
+              <Link to={`/product/${item._id}`}>
                 <div className="bg-white p-3 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer">
                   <img
                     src={item.image}

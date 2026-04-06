@@ -1,16 +1,16 @@
 import mongoose from "mongoose";
 
-const reviewSchema= new mongoose.Schema(
+const reviewSchema = new mongoose.Schema(
   {
-    user:{
-      type:mongoose.Schema.Types.ObjectId,
-      ref:"User"
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
-    name:String,
-    rating:Number,
-    comment:String,
+    name: String,
+    rating: Number,
+    comment: String,
   },
-  {timestamps:true}
+  { timestamps: true },
 );
 
 const productSchema = new mongoose.Schema(
@@ -32,12 +32,22 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    reviewsData: [reviewSchema],
+    reviewsData: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        name: String,
+        rating: Number,
+        comment: String,
+      },
+    ],
   },
   {
     timestamps: true,
   },
 );
 
-const Product=mongoose.model("Product", productSchema);
+const Product = mongoose.model("Product", productSchema);
 export default Product;

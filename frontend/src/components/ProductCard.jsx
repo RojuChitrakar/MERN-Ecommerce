@@ -8,7 +8,15 @@ function ProductCard({ product }) {
   const liked = isInWishlist(product._id);
   const { addToCart } = useCart();
   console.log(product);
-  
+  const totalReviews = product.reviewsData?.length || 0;
+
+  const averageRating =
+    totalReviews > 0
+      ? (
+          product.reviewsData.reduce((acc, item) => acc + item.rating, 0) /
+          totalReviews
+        ).toFixed(1)
+      : 0;
   return (
     <Link to={`/product/${product._id}`}>
       <div className="bg-white rounded-xl shadow-sm overflow-hidden group hover:shadow-xl transition">
@@ -45,7 +53,7 @@ function ProductCard({ product }) {
           <h3 className="font-semibold">{product.name}</h3>
 
           <p className="text-yellow-500 text-sm">
-            ⭐ {product.rating} ({product.reviews})
+           ⭐ {averageRating} ({totalReviews} {totalReviews === 1 ? "review" : "reviews"})
           </p>
 
           <div className="flex justify-between items-center mt-3">
@@ -62,7 +70,6 @@ function ProductCard({ product }) {
               <ShoppingCart size={14} />
               Add
             </button>
-          
           </div>
         </div>
       </div>

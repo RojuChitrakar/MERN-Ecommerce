@@ -6,7 +6,7 @@ import { useWishlist } from "../context/WishlistContext";
 import { Heart, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { fetchProductById } from "../api/productApi";
-
+import { addReview } from "../api/productApi";
 function ProductPage() {
   const reviewRef = useRef(null);
   const { id } = useParams();
@@ -36,22 +36,26 @@ function ProductPage() {
     comment: "",
   });
 
-  const handleSubmitReview = () => {
-    if (!newReview.name || !newReview.comment) return;
+  const handleSubmitReview = async () => {
+    if (!newReview.comment) return;
 
-    const review = {
-      ...newReview,
-    };
+    try {
+      const data = await addReview(product._id, {
+        rating: newReview.rating,
+        comment: newReview.comment,
+      });
 
-    setReviews([review, ...reviews]); // add on top
-    setShowForm(false);
+      setReviews(data.reviewsData);
 
-    // reset form
-    setNewReview({
-      name: "",
-      rating: 5,
-      comment: "",
-    });
+      setShowForm(false);
+
+      setNewReview({
+        rating: 5,
+        comment: "",
+      });
+    } catch (error) {
+      alert(error.response?.data?.message || "Error submitting review");
+    }
   };
 
   // ⭐ LIMIT REVIEWS
@@ -195,29 +199,21 @@ function ProductPage() {
             >
               <h3 className="font-semibold mb-3">Write a Review</h3>
 
-              <input
-                type="text"
-                placeholder="Your Name"
-                className="w-full border px-3 py-2 rounded mb-3"
-                value={newReview.name}
-                onChange={(e) =>
-                  setNewReview({ ...newReview, name: e.target.value })
-                }
-              />
-
-              <select
-                className="w-full border px-3 py-2 rounded mb-3"
-                value={newReview.rating}
-                onChange={(e) =>
-                  setNewReview({ ...newReview, rating: Number(e.target.value) })
-                }
-              >
-                {[5, 4, 3, 2, 1].map((r) => (
-                  <option key={r} value={r}>
-                    {r} Stars
-                  </option>
+              <div className="flex gap-2 mb-3">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    onClick={() => setNewReview({ ...newReview, rating: star })}
+                    className={`cursor-pointer text-2xl transition ${
+                      star <= newReview.rating
+                        ? "text-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                  >
+                    ★
+                  </span>
                 ))}
-              </select>
+              </div>
 
               <textarea
                 placeholder="Write your review..."

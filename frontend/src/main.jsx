@@ -9,16 +9,26 @@ import { WishlistProvider } from "./context/WishlistContext";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 
-
 axios.defaults.baseURL = "http://localhost:5000";
+
+axios.interceptors.request.use((config) => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (user?.token) {
+    config.headers.Authorization = `Bearer ${user.token}`;
+  }
+
+  return config;
+});
+
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <WishlistProvider>
-    <CartProvider>
-      <BrowserRouter>
-        <AuthProvider>
+  <AuthProvider>
+    <WishlistProvider>
+      <CartProvider>
+        <BrowserRouter>
           <App />
-        </AuthProvider>
-      </BrowserRouter>
-    </CartProvider>
-  </WishlistProvider>,
+        </BrowserRouter>
+      </CartProvider>
+    </WishlistProvider>
+  </AuthProvider>,
 );

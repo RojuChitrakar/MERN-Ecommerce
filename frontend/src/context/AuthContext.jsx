@@ -1,28 +1,41 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
+import axios from "axios";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(
+    JSON.parse(localStorage.getItem("user")) || null
+  );
 
-  // 🔥 Load from localStorage
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
-  }, []);
+  // ✅ LOGIN (API)
+  const login = async (email, password) => {
+    const { data } = await axios.post("/api/auth/login", {
+      email,
+      password,
+    });
 
-  const login = (data) => {
     setUser(data);
     localStorage.setItem("user", JSON.stringify(data));
   };
 
+  // ✅ REGISTER (API)
+  const register = async (userData) => {
+    const { data } = await axios.post("/api/auth/register", userData);
+
+    
+    localStorage.setItem("user", JSON.stringify(data));
+    setUser(data);
+  };
+
+  // ✅ LOGOUT
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, User, Phone } from "lucide-react";
 
 function Register() {
-  const { login } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -16,7 +16,7 @@ function Register() {
     confirmPassword: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (
@@ -46,12 +46,20 @@ function Register() {
       return;
     }
 
-    login({
-      fullName: form.firstName + " " + form.lastName,
-      email: form.email,
-    });
+    try {
+      await register({
+        fullName: form.firstName + " " + form.lastName,
+        email: form.email,
+        password: form.password,
+        phone: form.phone,
+      });
 
-    navigate("/checkout");
+      navigate("/checkout");
+    } catch (error) {
+      console.log("ERROR:", error.message);
+      
+      alert(error.response?.data?.message || "Registration failed");
+    }
   };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

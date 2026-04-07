@@ -12,7 +12,7 @@ function Login() {
     password: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.email || !form.password) {
@@ -20,15 +20,15 @@ function Login() {
       return;
     }
 
-    if (!form.email.includes("@")) {
-      alert("Please enter a valid email");
-      return;
+    try {
+      await login(form.email, form.password);
+
+      // ✅ SMART REDIRECT
+      const redirect = location.state?.from?.pathname || "/";
+      navigate(redirect);
+    } catch (error) {
+      alert(error.response?.data?.message || "Login failed");
     }
-
-    // login
-    login({ email: form.email, fullName: "User" });
-
-    navigate("/checkout");
   };
 
   return (

@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-
 const UserSchema = new mongoose.Schema(
   {
     fullName: {
@@ -32,6 +31,21 @@ const UserSchema = new mongoose.Schema(
         ref: "Product",
       },
     ],
+    cart: {
+      type: [
+        {
+          product: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
+          },
+          qty: {
+            type: Number,
+            default: 1,
+          },
+        },
+      ],
+      default: [], // 🔥 VERY IMPORTANT
+    },
   },
   { timestamps: true },
 );
@@ -43,10 +57,10 @@ UserSchema.pre("save", async function () {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-UserSchema.methods.matchPassword= async function (enteredPassword){
+UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-const User=mongoose.model("User", UserSchema);
+const User = mongoose.model("User", UserSchema);
 
 export default User;

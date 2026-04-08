@@ -63,7 +63,7 @@ function ProductCard({ product }) {
               onClick={(e) => {
                 e.preventDefault(); // ❗ stops Link navigation
                 e.stopPropagation(); // ❗ stops bubbling
-                addToCart(product);
+                addToCart(product, 1);
               }}
               className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-700"
             >

@@ -8,7 +8,7 @@ function WishlistCard({ product }) {
 
   // 🔥 MOVE TO CART FUNCTION
   const handleMoveToCart = () => {
-    addToCart(product);        // add to cart
+    addToCart(product, 1);        // add to cart
     toggleWishlist(product);   // remove from wishlist
   };
 

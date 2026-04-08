@@ -10,7 +10,7 @@ function Cart() {
 
   const { cart, removeFromCart, updateQty } = useCart();
 
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
+  const subtotal = cart.reduce((acc, item) => acc + item.product.price * item.qty, 0);
 
   const tax = subtotal * 0.1;
   const total = subtotal + tax;
@@ -60,18 +60,18 @@ function Cart() {
             <div className="md:col-span-2 space-y-6">
               {cart.map((item) => (
                 <div
-                  key={item.id}
+                  key={item.product._id}
                   className="bg-white p-5 rounded-xl shadow-sm flex gap-6 items-center"
                 >
                   {/* IMAGE */}
                   <img
-                    src={item.image}
+                    src={item.product.image}
                     className="w-28 h-28 object-cover rounded-lg"
                   />
 
                   {/* DETAILS */}
                   <div className="flex-1">
-                    <h2 className="text-lg font-semibold">{item.name}</h2>
+                    <h2 className="text-lg font-semibold">{item.product.name}</h2>
 
                     <p className="text-sm text-gray-500 capitalize">
                       {item.category}
@@ -85,7 +85,7 @@ function Cart() {
                     <div className="flex items-center gap-3 mt-3">
                       <button
                         onClick={() =>
-                          updateQty(item.id, Math.max(1, item.qty - 1))
+                          updateQty(item.product._id, Math.max(1, item.qty - 1))
                         }
                         className="px-3 py-1 border rounded-lg hover:bg-gray-100"
                       >
@@ -95,7 +95,7 @@ function Cart() {
                       <span>{item.qty}</span>
 
                       <button
-                        onClick={() => updateQty(item.id, item.qty + 1)}
+                        onClick={() => updateQty(item.product._id, item.qty + 1)}
                         className="px-3 py-1 border rounded-lg hover:bg-gray-100"
                       >
                         +
@@ -105,11 +105,11 @@ function Cart() {
 
                   {/* RIGHT SIDE */}
                   <div className="flex flex-col items-end gap-4">
-                    <button onClick={() => removeFromCart(item.id)}>
+                    <button onClick={() => removeFromCart(item.product._id)}>
                       <Trash2 className="text-red-500 hover:scale-110 transition" />
                     </button>
 
-                    <span className="text-lg font-semibold">${item.price}</span>
+                    <span className="text-lg font-semibold">${item.product.price}</span>
                   </div>
                 </div>
               ))}

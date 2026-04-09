@@ -3,7 +3,7 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../utils/axios.js";
 
 function Checkout() {
   const { cart,clearCart } = useCart();
@@ -74,6 +74,7 @@ function Checkout() {
       total,
     });
     clearCart();
+
     // console.log("ORDER CREATED:", data);
 
     // ✅ redirect after saving

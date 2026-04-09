@@ -4,7 +4,7 @@ import { User, Mail, Phone, MapPin, Package } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../utils/axios.js";
 
 
 function Profile() {

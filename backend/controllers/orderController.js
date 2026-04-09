@@ -1,5 +1,5 @@
 import Order from "../models/Order.js";
-
+import Product from "../models/Product.js";
 // ✅ CREATE ORDER
 export const createOrder = async (req, res) => {
   try {
@@ -103,6 +103,64 @@ export const getAdminStats = async (req, res) => {
     res.json({
       totalOrders,
       productStats,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getFullAdminStats = async (req, res) => {
+  try {
+    const products = await Product.find();
+    const orders = await Order.find();
+
+    let totalOrders = orders.length;
+    let totalProducts = products.length;
+
+    let totalSold = 0;
+
+    const productMap = {};
+    const categoryMap = {};
+
+    // 🧠 Initialize products
+    products.forEach((p) => {
+      productMap[p._id] = {
+        name: p.name,
+        stock: p.countInStock || 0,
+        sold: 0,
+      };
+
+      // category count
+      if (categoryMap[p.category]) {
+        categoryMap[p.category]++;
+      } else {
+        categoryMap[p.category] = 1;
+      }
+    });
+
+    // 🧾 Process orders
+    orders.forEach((order) => {
+      order.items.forEach((item) => {
+        totalSold += item.qty;
+
+        if (productMap[item.product]) {
+          productMap[item.product].sold += item.qty;
+        }
+      });
+    });
+
+    // 🔥 Final product stats
+    const productStats = Object.values(productMap).map((p) => ({
+      ...p,
+      remaining: p.stock - p.sold,
+    }));
+
+    res.json({
+      totalOrders,
+      totalProducts,
+      totalSold,
+      productStats,
+      categoryStats: categoryMap,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

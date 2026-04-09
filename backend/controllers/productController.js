@@ -1,5 +1,8 @@
 import Product from "../models/Product.js";
 
+/* =========================
+   🔍 GET ALL PRODUCTS
+========================= */
 export const getProducts = async (req, res) => {
   try {
     const { keyword, category, minPrice, maxPrice, sort } = req.query;
@@ -16,11 +19,9 @@ export const getProducts = async (req, res) => {
 
     // 🗂️ Category
     if (category) {
-      query.category = {
-        $regex: category,
-        $options: "i", // makes it case-insensitive
-      };
+      query.category = { $regex: category, $options: "i" };
     }
+
     // 💰 Price filter
     if (minPrice || maxPrice) {
       query.price = {};
@@ -28,9 +29,8 @@ export const getProducts = async (req, res) => {
       if (maxPrice) query.price.$lte = Number(maxPrice);
     }
 
-    // 🔽 Sorting (MongoDB way)
+    // 🔽 Sorting
     let sortOption = {};
-
     if (sort === "low") sortOption = { price: 1 };
     if (sort === "high") sortOption = { price: -1 };
     if (sort === "new") sortOption = { createdAt: -1 };
@@ -39,29 +39,31 @@ export const getProducts = async (req, res) => {
 
     res.json(products);
   } catch (error) {
-    console.error("ERROR:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
+/* =========================
+   🔍 GET SINGLE PRODUCT
+========================= */
 export const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
 
-    if (product) {
-      res.json(product);
-    } else {
-      res.status(404).json({ message: "Product not found" });
-    }
+    if (product) res.json(product);
+    else res.status(404).json({ message: "Product not found" });
+
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: error.message });
   }
 };
 
+/* =========================
+   ⭐ ADD REVIEW
+========================= */
 export const addProductReview = async (req, res) => {
   try {
-    const { rating, comment } = req.body;
+    const { rating, comment, images } = req.body;
 
     const product = await Product.findById(req.params.id);
 
@@ -69,43 +71,26 @@ export const addProductReview = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // 🔐 1. CHECK IF USER ALREADY REVIEWED
     const alreadyReviewed = product.reviewsData.find(
       (r) => r.user.toString() === req.user._id.toString()
     );
 
     if (alreadyReviewed) {
-      return res.status(400).json({ message: "You already reviewed this product" });
-    }
-
-    // 📦 2. CHECK IF USER PURCHASED & RECEIVED PRODUCT
-    const orders = await Order.find({ user: req.user._id });
-
-    const hasPurchased = orders.some((order) =>
-      order.items.some(
-        (item) =>
-          item.product.toString() === req.params.id &&
-          order.status === "Delivered"
-      )
-    );
-
-    if (!hasPurchased) {
       return res.status(400).json({
-        message: "You can only review products you have purchased and received",
+        message: "You already reviewed this product",
       });
     }
 
-    // ⭐ 3. CREATE REVIEW
     const review = {
       user: req.user._id,
-      name: req.user.fullName,
+      name: req.user.name,
       rating: Number(rating),
       comment,
+      images: images || [],
     };
 
     product.reviewsData.push(review);
 
-    // 🔢 UPDATE STATS
     product.reviews = product.reviewsData.length;
 
     product.rating =
@@ -118,64 +103,87 @@ export const addProductReview = async (req, res) => {
       message: "Review added",
       reviewsData: product.reviewsData,
     });
+
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: error.message });
   }
 };
 
+/* =========================
+   ➕ CREATE PRODUCT (ADMIN)
+========================= */
 export const createProduct = async (req, res) => {
   try {
-    const { name, price, image, category, description } = req.body;
+    const {
+      name,
+      price,
+      description,
+      category,
+      images,
+      countInStock,
+    } = req.body;
 
     const product = new Product({
       name,
       price,
-      image,
-      category,
       description,
+      category,
+      images, // 🔥 array
+      countInStock,
     });
 
     const createdProduct = await product.save();
 
     res.status(201).json(createdProduct);
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+/* =========================
+   ✏️ UPDATE PRODUCT (ADMIN)
+========================= */
 export const updateProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
 
-    if (product) {
-      product.name = req.body.name || product.name;
-      product.price = req.body.price || product.price;
-      product.image = req.body.image || product.image;
-      product.category = req.body.category || product.category;
-      product.description = req.body.description || product.description;
-
-      const updatedProduct = await product.save();
-
-      res.json(updatedProduct);
-    } else {
-      res.status(404).json({ message: "Product not found" });
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
+
+    product.name = req.body.name ?? product.name;
+    product.price = req.body.price ?? product.price;
+    product.description = req.body.description ?? product.description;
+    product.category = req.body.category ?? product.category;
+    product.images = req.body.images ?? product.images;
+    product.countInStock =
+      req.body.countInStock ?? product.countInStock;
+
+    const updatedProduct = await product.save();
+
+    res.json(updatedProduct);
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+/* =========================
+   ❌ DELETE PRODUCT (ADMIN)
+========================= */
 export const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
 
-    if (product) {
-      await product.deleteOne();
-      res.json({ message: "Product removed" });
-    } else {
-      res.status(404).json({ message: "Product not found" });
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
+
+    await product.deleteOne();
+
+    res.json({ message: "Product removed" });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

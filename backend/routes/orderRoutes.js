@@ -8,7 +8,7 @@ import {
 import { protect } from "../middleware/authMiddleware.js";
 import { admin } from "../middleware/adminMiddleware.js";
 import { getAdminStats } from "../controllers/orderController.js";
-
+import { getFullAdminStats } from "../controllers/orderController.js";
 const router = express.Router();
 
 // USER
@@ -20,4 +20,5 @@ router.get("/", protect, admin, getAllOrders);
 router.put("/:id/deliver", protect, admin, markDelivered);
 router.get("/stats", protect, admin, getAdminStats);
 
+router.get("/full-stats", protect, admin, getFullAdminStats);
 export default router;

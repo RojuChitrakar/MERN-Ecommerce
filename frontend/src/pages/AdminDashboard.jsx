@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-
+import axios from "../utils/axios";
 import AdminProducts from "./AdminProducts";
 import AdminOrders from "./AdminOrders";
 
@@ -13,24 +12,23 @@ function AdminDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // 🔐 PROTECT (FIXED)
+  // 🔐 PROTECT ROUTE
   useEffect(() => {
-    if (user === null) return; // wait for auth
+    if (user === null) return;
 
     if (!user || !user.isAdmin) {
       navigate("/");
     }
   }, [user, navigate]);
 
-  // ⛔ prevent render before user loads
   if (!user) return null;
 
-  // 📊 FETCH STATS
+  // 📊 FETCH FULL STATS
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const { data } = await axios.get("/api/orders/stats");
-        console.log("STATS:", data); // debug
+        const { data } = await axios.get("/orders/full-stats");
+        console.log("FULL STATS:", data);
         setStats(data);
       } catch (error) {
         console.error("Stats error:", error.response?.data || error.message);
@@ -44,12 +42,9 @@ function AdminDashboard() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-
       {/* 🟦 SIDEBAR */}
       <div className="w-64 bg-white shadow-lg p-5">
-        <h2 className="text-2xl font-bold mb-8 text-blue-600">
-          Admin Panel
-        </h2>
+        <h2 className="text-2xl font-bold mb-8 text-blue-600">Admin Panel</h2>
 
         <div className="flex flex-col gap-3">
           <button
@@ -89,19 +84,13 @@ function AdminDashboard() {
 
       {/* 🟩 MAIN CONTENT */}
       <div className="flex-1 p-6">
-
         {/* 🔝 TOP BAR */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold capitalize">
-            {activeTab}
-          </h1>
+          <h1 className="text-2xl font-bold capitalize">{activeTab}</h1>
 
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">
-              {user?.name}
-            </span>
+            <span className="text-sm text-gray-600">{user?.name}</span>
 
-            {/* 🔥 LOGOUT BUTTON */}
             <button
               onClick={() => {
                 logout();
@@ -117,52 +106,84 @@ function AdminDashboard() {
         {/* 📊 DASHBOARD */}
         {activeTab === "dashboard" && (
           <>
-            <div className="grid md:grid-cols-3 gap-6">
-
-              {/* TOTAL ORDERS */}
+            {/* 🔥 TOP STATS */}
+            <div className="grid md:grid-cols-4 gap-6">
               <div className="bg-white p-5 rounded-xl shadow">
                 <h3 className="text-gray-500">Total Orders</h3>
                 <p className="text-2xl font-bold">
-                  {stats ? stats.totalOrders : "..."}
+                  {stats?.totalOrders || "..."}
                 </p>
               </div>
 
-              {/* PRODUCTS COUNT */}
               <div className="bg-white p-5 rounded-xl shadow">
-                <h3 className="text-gray-500">Products Sold</h3>
+                <h3 className="text-gray-500">Total Products</h3>
                 <p className="text-2xl font-bold">
-                  {stats
-                    ? Object.keys(stats.productStats).length
+                  {stats?.totalProducts || "..."}
+                </p>
+              </div>
+
+              <div className="bg-white p-5 rounded-xl shadow">
+                <h3 className="text-gray-500">Total Sold</h3>
+                <p className="text-2xl font-bold">
+                  {stats?.totalSold || "..."}
+                </p>
+              </div>
+
+              <div className="bg-white p-5 rounded-xl shadow">
+                <h3 className="text-gray-500">Stock Remaining</h3>
+                <p className="text-2xl font-bold">
+                  {stats?.productStats
+                    ? stats.productStats.reduce(
+                        (acc, p) => acc + p.remaining,
+                        0,
+                      )
                     : "..."}
                 </p>
               </div>
-
-              {/* REVENUE (placeholder for now) */}
-              <div className="bg-white p-5 rounded-xl shadow">
-                <h3 className="text-gray-500">Revenue</h3>
-                <p className="text-2xl font-bold">$--</p>
-              </div>
-
             </div>
 
-            {/* 📦 PRODUCT SALES */}
-            {stats && (
-              <div className="bg-white p-5 rounded-xl shadow mt-6">
-                <h2 className="text-lg font-semibold mb-4">
-                  Product Sales
-                </h2>
+            {/* 📦 PRODUCT ANALYTICS */}
+            <div className="bg-white p-5 rounded-xl shadow mt-6">
+              <h2 className="text-lg font-semibold mb-4">Product Analytics</h2>
 
-                {Object.entries(stats.productStats).map(([name, qty]) => (
-                  <div
-                    key={name}
-                    className="flex justify-between border-b py-2"
-                  >
-                    <span>{name}</span>
-                    <span>{qty} sold</span>
-                  </div>
-                ))}
+              <div className="grid grid-cols-4 font-semibold border-b pb-2">
+                <span>Product</span>
+                <span>Stock</span>
+                <span>Sold</span>
+                <span>Remaining</span>
               </div>
-            )}
+
+              {stats?.productStats?.map((p, index) => (
+                <div key={index} className="grid grid-cols-4 py-2 border-b">
+                  <span>{p.name}</span>
+                  <span>{p.stock}</span>
+                  <span className="text-blue-600">{p.sold}</span>
+                  <span
+                    className={
+                      p.remaining < 5 ? "text-red-500 font-semibold" : ""
+                    }
+                  >
+                    {p.remaining}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* 📊 CATEGORY STATS */}
+            <div className="bg-white p-5 rounded-xl shadow mt-6">
+              <h2 className="text-lg font-semibold mb-4">
+                Category Distribution
+              </h2>
+
+              {Object.entries(stats?.categoryStats || {}).map(
+                ([cat, count]) => (
+                  <div key={cat} className="flex justify-between border-b py-2">
+                    <span>{cat}</span>
+                    <span>{count} products</span>
+                  </div>
+                ),
+              )}
+            </div>
           </>
         )}
 
@@ -171,7 +192,6 @@ function AdminDashboard() {
 
         {/* 🧾 ORDERS */}
         {activeTab === "orders" && <AdminOrders />}
-
       </div>
     </div>
   );

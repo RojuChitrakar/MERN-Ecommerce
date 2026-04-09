@@ -9,6 +9,9 @@ import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import OrderSuccess from "./pages/OrderSuccess.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
+
+
 function App() {
   return (
     <Routes>
@@ -25,6 +28,7 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/order-success" element={<OrderSuccess />} />
+      <Route path="/admin" element={<AdminDashboard/>}/>
     </Routes>
   );
 }

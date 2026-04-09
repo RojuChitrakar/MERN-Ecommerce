@@ -6,23 +6,32 @@ import Footer from "../components/Footer";
 import ProductCard from "../components/ProductCard";
 import { useState, useEffect } from "react";
 import { fetchProducts } from "../api/productApi";
+import { useAuth } from "../context/AuthContext";
 
 function Home() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const featured = products.slice(0, 8);
   useEffect(() => {
-  const loadProducts = async () => {
-    try {
-      const data = await fetchProducts();
-      setProducts(data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    const loadProducts = async () => {
+      try {
+        const data = await fetchProducts();
+        setProducts(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
-  loadProducts();
-}, []);
+    loadProducts();
+  }, []);
+
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user?.isAdmin) {
+      navigate("/admin");
+    }
+  }, [user, navigate]);
   return (
     <div className="bg-gray-100 min-h-screen">
       {/* 🔵 NAVBAR */}
@@ -89,7 +98,7 @@ function Home() {
               key={cat.name}
               onClick={() =>
                 navigate(`/products?category=${cat.slug}`, {
-                  state: { from: "home" }, 
+                  state: { from: "home" },
                 })
               }
               className="relative rounded-xl overflow-hidden cursor-pointer group shadow-md hover:shadow-xl transition duration-300"

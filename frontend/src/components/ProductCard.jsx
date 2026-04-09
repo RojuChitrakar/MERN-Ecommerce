@@ -7,7 +7,7 @@ function ProductCard({ product }) {
 
   const liked = isInWishlist(product._id);
   const { addToCart } = useCart();
-  console.log(product);
+  // console.log(product);
   const totalReviews = product.reviewsData?.length || 0;
 
   const averageRating =

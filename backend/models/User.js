@@ -25,6 +25,10 @@ const UserSchema = new mongoose.Schema(
       postalCode: String,
       country: String,
     },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
     wishlist: [
       {
         type: mongoose.Schema.Types.ObjectId,

@@ -21,16 +21,21 @@ function Login() {
     }
 
     try {
-      await login(form.email, form.password);
+      const data = await login(form.email, form.password); // ✅ get user
+      console.log("LOGIN DATA:", data);
+      // 🔥 ADMIN REDIRECT
+      if (data.isAdmin) {
+        navigate("/admin");
+      } else {
+        const redirect = location.state?.from?.pathname || "/";
+        navigate(redirect);
+      }
 
-      // ✅ SMART REDIRECT
-      const redirect = location.state?.from?.pathname || "/";
-      navigate(redirect);
+      
     } catch (error) {
       alert(error.response?.data?.message || "Login failed");
     }
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-xl shadow w-full max-w-md">

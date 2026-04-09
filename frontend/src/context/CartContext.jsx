@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { useAuth } from "./AuthContext";
 import axios from "axios";
 
 const CartContext = createContext();
@@ -49,15 +50,22 @@ export const CartProvider = ({ children }) => {
       console.error("Update qty error:", error);
     }
   };
+  const clearCart = () => {
+  setCart([]);
+};
 
   // ✅ LOAD CART ON APP START
-  useEffect(() => {
-    fetchCart();
-  }, []);
+  const { user } = useAuth();
 
+  useEffect(() => {
+    if (user && !user.isAdmin) {
+      fetchCart();
+    }
+  }, [user]);
+  
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateQty, fetchCart }}
+      value={{ cart, addToCart, removeFromCart, updateQty, fetchCart , clearCart}}
     >
       {children}
     </CartContext.Provider>

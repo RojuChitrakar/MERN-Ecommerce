@@ -46,6 +46,7 @@ export const loginUser = async (req, res) => {
       email: user.email,
       phone: user.phone,
       token: generateToken(user._id),
+      isAdmin:user.isAdmin,
     });
   } else {
     res.status(401).json({ message: "Invalid email or password" });

@@ -1,11 +1,11 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState , useEffect} from "react";
 import axios from "axios";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("user")) || null
+    JSON.parse(localStorage.getItem("user")) || null,
   );
 
   // ✅ LOGIN (API)
@@ -17,13 +17,14 @@ export const AuthProvider = ({ children }) => {
 
     setUser(data);
     localStorage.setItem("user", JSON.stringify(data));
+
+    return data; // 🔥 THIS IS THE FIX
   };
 
   // ✅ REGISTER (API)
   const register = async (userData) => {
     const { data } = await axios.post("/api/auth/register", userData);
 
-    
     localStorage.setItem("user", JSON.stringify(data));
     setUser(data);
   };
@@ -33,6 +34,13 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     localStorage.removeItem("user");
   };
+  useEffect(() => {
+  const storedUser = localStorage.getItem("user");
+
+  if (storedUser) {
+    setUser(JSON.parse(storedUser));
+  }
+}, []);
 
   return (
     <AuthContext.Provider value={{ user, login, register, logout }}>

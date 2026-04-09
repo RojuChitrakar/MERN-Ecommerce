@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { Menu, X, Heart, ShoppingCart, User, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +25,21 @@ function Navbar() {
     isActive
       ? "text-blue-600 font-semibold"
       : "text-gray-700 hover:text-blue-600";
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef();
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <nav className="sticky top-0 z-50 bg-white shadow-sm border-b w-full ">
       <div className="w-full px-8 py-3 flex items-center justify-between">
@@ -92,15 +106,54 @@ function Navbar() {
         {/* RIGHT */}
         <div className="hidden md:flex items-center gap-6 pr-2">
           {user ? (
-            <Link
-              to="/profile"
-              className="flex items-center gap-2 hover:text-blue-600"
-            >
-              <User size={20} />
-              <span className="text-sm">
-                {user?.fullName || user?.email || "Profile"}
-              </span>
-            </Link>
+            <div className="relative" ref={profileRef}>
+              {/* PROFILE BUTTON */}
+              <button
+                onClick={() => setProfileOpen(!profileOpen)}
+                className="flex items-center gap-2 hover:text-blue-600"
+              >
+                <User size={20} />
+                <span className="text-sm">
+                  {user?.fullName || user?.email || "Profile"}
+                </span>
+              </button>
+
+              {/* DROPDOWN */}
+              {profileOpen && (
+                <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg border p-3 z-50">
+                  {/* USER INFO */}
+                  <div className="mb-3">
+                    <p className="font-semibold">{user?.fullName || "User"}</p>
+                    <p className="text-sm text-gray-500">{user?.email}</p>
+                  </div>
+
+                  <hr className="mb-2" />
+
+                  {/* MY PROFILE */}
+                  <button
+                    onClick={() => {
+                      navigate("/profile");
+                      setProfileOpen(false);
+                    }}
+                    className="w-full text-left px-2 py-2 hover:bg-gray-100 rounded flex items-center gap-2"
+                  >
+                    <User size={16} />
+                    My Profile
+                  </button>
+
+                  {/* LOGOUT */}
+                  <button
+                    onClick={() => {
+                      logout();
+                      navigate("/login");
+                    }}
+                    className="w-full text-left px-2 py-2 text-red-500 hover:bg-red-50 rounded flex items-center gap-2"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <Link to="/login" className="text-sm hover:text-blue-600">
               Login / Signup

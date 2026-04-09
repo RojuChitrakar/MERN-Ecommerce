@@ -9,8 +9,11 @@ function Cart() {
   const navigate = useNavigate();
 
   const { cart, removeFromCart, updateQty } = useCart();
-
-  const subtotal = cart.reduce((acc, item) => acc + item.product.price * item.qty, 0);
+  const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
+  const subtotal = cart.reduce(
+    (acc, item) => acc + item.product.price * item.qty,
+    0,
+  );
 
   const tax = subtotal * 0.1;
   const total = subtotal + tax;
@@ -71,7 +74,9 @@ function Cart() {
 
                   {/* DETAILS */}
                   <div className="flex-1">
-                    <h2 className="text-lg font-semibold">{item.product.name}</h2>
+                    <h2 className="text-lg font-semibold">
+                      {item.product.name}
+                    </h2>
 
                     <p className="text-sm text-gray-500 capitalize">
                       {item.category}
@@ -95,7 +100,9 @@ function Cart() {
                       <span>{item.qty}</span>
 
                       <button
-                        onClick={() => updateQty(item.product._id, item.qty + 1)}
+                        onClick={() =>
+                          updateQty(item.product._id, item.qty + 1)
+                        }
                         className="px-3 py-1 border rounded-lg hover:bg-gray-100"
                       >
                         +
@@ -109,7 +116,9 @@ function Cart() {
                       <Trash2 className="text-red-500 hover:scale-110 transition" />
                     </button>
 
-                    <span className="text-lg font-semibold">${item.product.price}</span>
+                    <span className="text-lg font-semibold">
+                      ${item.product.price}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -118,6 +127,11 @@ function Cart() {
             {/* 🔵 RIGHT: SUMMARY */}
             <div className="bg-white p-6 rounded-xl shadow-sm h-fit sticky top-24">
               <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
+
+              <div className="flex justify-between">
+                <span>Items ({totalItems})</span>
+                <span>{totalItems}</span>
+              </div>
 
               <div className="space-y-3 text-gray-600">
                 <div className="flex justify-between">

@@ -1,9 +1,11 @@
 import Navbar from "../components/Navbar";
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { User, Mail, Phone, MapPin, Package } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
+
 
 function Profile() {
   const [user, setUser] = useState({
@@ -12,24 +14,24 @@ function Profile() {
     phone: "+9779866264853",
   });
   const [editing, setEditing] = useState(false);
-
+const [orders, setOrders] = useState([]);
   // SAMPLE ORDER DATA (replace later with backend)
-  const orders = [
-    {
-      id: "ORD123",
-      date: "April 10, 2026",
-      total: 129.99,
-      status: "Delivered",
-      items: ["Running Shoes", "Yoga Mat"],
-    },
-    {
-      id: "ORD124",
-      date: "April 15, 2026",
-      total: 79.99,
-      status: "Pending",
-      items: ["Wireless Headphones"],
-    },
-  ];
+  // const orders = [
+  //   {
+  //     id: "ORD123",
+  //     date: "April 10, 2026",
+  //     total: 129.99,
+  //     status: "Delivered",
+  //     items: ["Running Shoes", "Yoga Mat"],
+  //   },
+  //   {
+  //     id: "ORD124",
+  //     date: "April 15, 2026",
+  //     total: 79.99,
+  //     status: "Pending",
+  //     items: ["Wireless Headphones"],
+  //   },
+  // ];
 
   const [address, setAddress] = useState({
     fullName: "",
@@ -50,6 +52,20 @@ function Profile() {
     logout();
     navigate("/");
   };
+
+  useEffect(() => {
+  const fetchOrders = async () => {
+    try {
+      const { data } = await axios.get("/api/orders/my");
+      console.log("MY ORDERS:", data);
+      setOrders(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  fetchOrders();
+}, []);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -249,7 +265,7 @@ function Profile() {
             ) : (
               <div className="space-y-4">
                 {orders.map((order) => (
-                  <div key={order.id} className="border p-4 rounded-lg">
+                  <div key={order._id} className="border p-4 rounded-lg">
                     <div className="flex justify-between mb-2">
                       <p className="font-semibold">{order.id}</p>
 
@@ -267,7 +283,7 @@ function Profile() {
                     <p className="text-gray-500 text-sm">{order.date}</p>
 
                     <p className="text-sm mt-2">
-                      Items: {order.items.join(", ")}
+                      Items: {order.items.map(item => item.name).join(", ")}
                     </p>
 
                     <p className="font-semibold mt-2">Total: ${order.total}</p>

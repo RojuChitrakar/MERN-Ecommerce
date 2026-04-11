@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
-import axios from "../utils/axios.js";
+import axios from "../utils/axios";
 
 function AdminOrders() {
   const [orders, setOrders] = useState([]);
 
   const fetchOrders = async () => {
-    const { data } = await axios.get("/api/orders");
-    setOrders(data);
+    try {
+      const { data } = await axios.get("/orders"); // ✅ correct
+      setOrders(data);
+    } catch (error) {
+      console.error("ORDER FETCH ERROR:", error.response?.data || error.message);
+    }
   };
 
   useEffect(() => {
@@ -14,44 +18,66 @@ function AdminOrders() {
   }, []);
 
   const markDelivered = async (id) => {
-    await axios.put(`/api/orders/${id}/deliver`);
-    fetchOrders();
+    try {
+      await axios.put(`/orders/${id}/deliver`);
+      fetchOrders();
+    } catch (error) {
+      console.error("DELIVER ERROR:", error.response?.data || error.message);
+    }
   };
 
   return (
-    <div className="bg-white p-5 rounded-xl shadow">
-      <h2 className="text-xl font-semibold mb-4">Manage Orders</h2>
+    <div>
+      <h2 className="text-xl font-bold mb-4">🧾 Orders</h2>
 
-      {orders.map((order) => (
-        <div
-          key={order._id}
-          className="border p-4 mb-3 rounded-lg"
-        >
-          <p className="font-semibold">
-            User: {order.user?.name || "N/A"}
-          </p>
+      <div className="bg-white p-5 rounded-xl shadow">
 
-          <p>Total: ${order.totalPrice}</p>
-
-          <p>
-            Status:{" "}
-            {order.isDelivered ? (
-              <span className="text-green-600">Delivered ✅</span>
-            ) : (
-              <span className="text-yellow-600">Pending ⏳</span>
-            )}
-          </p>
-
-          {!order.isDelivered && (
-            <button
-              onClick={() => markDelivered(order._id)}
-              className="mt-2 bg-green-600 text-white px-3 py-1 rounded"
-            >
-              Mark as Delivered
-            </button>
-          )}
+        <div className="grid grid-cols-6 font-semibold border-b pb-2 mb-2">
+          <span>User</span>
+          <span>Total</span>
+          <span>Payment</span>
+          <span>Status</span>
+          <span>Date</span>
+          <span>Action</span>
         </div>
-      ))}
+
+        {orders.map((order) => (
+          <div
+            key={order._id}
+            className="grid grid-cols-6 items-center border-b py-2"
+          >
+            <span>{order.user?.name}</span>
+
+            <span>₹{order.total}</span>
+
+            <span>{order.paymentMethod}</span>
+
+            <span>
+              {order.isDelivered ? (
+                <span className="text-green-600">Delivered</span>
+              ) : (
+                <span className="text-red-500">Pending</span>
+              )}
+            </span>
+
+            <span>
+              {new Date(order.createdAt).toLocaleDateString()}
+            </span>
+
+            <div>
+              {!order.isDelivered && (
+                <button
+                  onClick={() => markDelivered(order._id)}
+                  className="bg-green-600 text-white px-2 py-1 rounded"
+                >
+                  Mark Delivered
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+
+      </div>
     </div>
   );
 }

@@ -1,11 +1,12 @@
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
-// ✅ CREATE ORDER
+
+/* =========================
+   ➕ CREATE ORDER
+========================= */
 export const createOrder = async (req, res) => {
   try {
     const { cartItems, shippingAddress, paymentMethod, total } = req.body;
-
-    console.log("CART ITEMS:", cartItems); // 🔥 DEBUG
 
     if (!cartItems || cartItems.length === 0) {
       return res.status(400).json({ message: "No order items" });
@@ -14,7 +15,6 @@ export const createOrder = async (req, res) => {
     const order = new Order({
       user: req.user._id,
 
-      // ✅ FIXED MAPPING
       items: cartItems.map((item) => ({
         product: item.product._id,
         name: item.product.name,
@@ -29,15 +29,17 @@ export const createOrder = async (req, res) => {
     });
 
     const createdOrder = await order.save();
-
     res.status(201).json(createdOrder);
+
   } catch (error) {
     console.error("CREATE ORDER ERROR:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// ✅ USER: GET MY ORDERS
+/* =========================
+   📦 USER: GET MY ORDERS
+========================= */
 export const getMyOrders = async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id }).sort({
@@ -49,21 +51,22 @@ export const getMyOrders = async (req, res) => {
   }
 };
 
-// ✅ ADMIN: GET ALL ORDERS
+/* =========================
+   👑 ADMIN: GET ALL ORDERS
+========================= */
 export const getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find()
-      .populate("user", "fullName email")
-      .sort({ createdAt: -1 });
-
+    const orders = await Order.find().populate("user", "name email");
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// ✅ ADMIN: MARK AS DELIVERED
-export const markDelivered = async (req, res) => {
+/* =========================
+   🚚 MARK ORDER DELIVERED
+========================= */
+export const markOrderDelivered = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
 
@@ -71,23 +74,34 @@ export const markDelivered = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
+    if (order.isDelivered) {
+      return res.status(400).json({ message: "Order already delivered" });
+    }
+
     order.isDelivered = true;
-    order.deliveredAt = Date.now();
+    order.deliveredAt = new Date();
 
-    await order.save();
+    const updatedOrder = await order.save();
 
-    res.json(order);
+    res.json({
+      message: "Order marked as delivered",
+      order: updatedOrder,
+    });
+
   } catch (error) {
+    console.error("DELIVER ERROR:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
+/* =========================
+   📊 BASIC ADMIN STATS
+========================= */
 export const getAdminStats = async (req, res) => {
   try {
     const orders = await Order.find();
 
     const totalOrders = orders.length;
-
     const productStats = {};
 
     orders.forEach((order) => {
@@ -104,18 +118,22 @@ export const getAdminStats = async (req, res) => {
       totalOrders,
       productStats,
     });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+/* =========================
+   📊 FULL ADMIN DASHBOARD
+========================= */
 export const getFullAdminStats = async (req, res) => {
   try {
     const products = await Product.find();
     const orders = await Order.find();
 
-    let totalOrders = orders.length;
-    let totalProducts = products.length;
+    const totalOrders = orders.length;
+    const totalProducts = products.length;
 
     let totalSold = 0;
 
@@ -130,7 +148,6 @@ export const getFullAdminStats = async (req, res) => {
         sold: 0,
       };
 
-      // category count
       if (categoryMap[p.category]) {
         categoryMap[p.category]++;
       } else {
@@ -149,7 +166,7 @@ export const getFullAdminStats = async (req, res) => {
       });
     });
 
-    // 🔥 Final product stats
+    // 🔥 Final stats
     const productStats = Object.values(productMap).map((p) => ({
       ...p,
       remaining: p.stock - p.sold,
@@ -162,6 +179,7 @@ export const getFullAdminStats = async (req, res) => {
       productStats,
       categoryStats: categoryMap,
     });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

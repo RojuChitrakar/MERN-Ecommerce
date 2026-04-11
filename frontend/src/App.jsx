@@ -10,7 +10,7 @@ import Register from "./pages/Register.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import OrderSuccess from "./pages/OrderSuccess.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
-
+import AdminOrders from "./pages/AdminOrders.jsx";
 
 function App() {
   return (
@@ -29,6 +29,7 @@ function App() {
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/order-success" element={<OrderSuccess />} />
       <Route path="/admin" element={<AdminDashboard/>}/>
+      <Route path="/admin/orders" element={<AdminOrders />} />
     </Routes>
   );
 }

@@ -52,7 +52,6 @@ export const getProductById = async (req, res) => {
 
     if (product) res.json(product);
     else res.status(404).json({ message: "Product not found" });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -72,7 +71,7 @@ export const addProductReview = async (req, res) => {
     }
 
     const alreadyReviewed = product.reviewsData.find(
-      (r) => r.user.toString() === req.user._id.toString()
+      (r) => r.user.toString() === req.user._id.toString(),
     );
 
     if (alreadyReviewed) {
@@ -103,7 +102,6 @@ export const addProductReview = async (req, res) => {
       message: "Review added",
       reviewsData: product.reviewsData,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -114,29 +112,26 @@ export const addProductReview = async (req, res) => {
 ========================= */
 export const createProduct = async (req, res) => {
   try {
-    const {
-      name,
-      price,
-      description,
-      category,
-      images,
-      countInStock,
-    } = req.body;
+    console.log("FILES:", JSON.stringify(req.files, null, 2));
+console.log("BODY:", req.body);
+
+    // 🔥 SAFELY EXTRACT IMAGE URLS
+    const imageUrls = req.files?.map((file) => file.path || file.secure_url) || [];
 
     const product = new Product({
-      name,
-      price,
-      description,
-      category,
-      images, // 🔥 array
-      countInStock,
+      name: req.body.name,
+      price: req.body.price,
+      description: req.body.description,
+      category: req.body.category,
+      countInStock: req.body.countInStock,
+      images: imageUrls,
     });
 
     const createdProduct = await product.save();
-
     res.status(201).json(createdProduct);
 
   } catch (error) {
+    console.error("CREATE PRODUCT ERROR:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -156,15 +151,19 @@ export const updateProduct = async (req, res) => {
     product.price = req.body.price ?? product.price;
     product.description = req.body.description ?? product.description;
     product.category = req.body.category ?? product.category;
-    product.images = req.body.images ?? product.images;
-    product.countInStock =
-      req.body.countInStock ?? product.countInStock;
+    product.countInStock = req.body.countInStock ?? product.countInStock;
+
+    // 🔥 FIXED IMAGE HANDLING
+    if (req.files && req.files.length > 0) {
+      const imageUrls = req.files.map(file => file.path || file.secure_url);
+      product.images = imageUrls;
+    }
 
     const updatedProduct = await product.save();
 
     res.json(updatedProduct);
-
   } catch (error) {
+    console.error("UPDATE PRODUCT ERROR:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -183,7 +182,6 @@ export const deleteProduct = async (req, res) => {
     await product.deleteOne();
 
     res.json({ message: "Product removed" });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

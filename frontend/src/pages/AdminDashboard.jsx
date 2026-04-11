@@ -55,7 +55,7 @@ function AdminDashboard() {
                 : "hover:bg-gray-100"
             }`}
           >
-            📊 Dashboard
+            Dashboard
           </button>
 
           <button
@@ -66,7 +66,7 @@ function AdminDashboard() {
                 : "hover:bg-gray-100"
             }`}
           >
-            📦 Products
+            Products
           </button>
 
           <button
@@ -77,7 +77,7 @@ function AdminDashboard() {
                 : "hover:bg-gray-100"
             }`}
           >
-            🧾 Orders
+            Orders
           </button>
         </div>
       </div>

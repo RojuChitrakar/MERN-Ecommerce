@@ -56,7 +56,7 @@ const [orders, setOrders] = useState([]);
   useEffect(() => {
   const fetchOrders = async () => {
     try {
-      const { data } = await axios.get("/api/orders/my");
+      const { data } = await axios.get("/orders/my");
       console.log("MY ORDERS:", data);
       setOrders(data);
     } catch (error) {

@@ -59,7 +59,7 @@ function Checkout() {
   }
 
   try {
-    const { data } = await axios.post("/api/orders", {
+    const { data } = await axios.post("/orders", {
       cartItems: cart,
       shippingAddress: {
         fullName: `${firstName} ${lastName}`,

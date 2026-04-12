@@ -1,37 +1,19 @@
 import Navbar from "../components/Navbar";
-import { Link } from "react-router-dom";
-import { User, Mail, Phone, MapPin, Package } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { User, Mail, Phone, Package } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "../utils/axios.js";
 
-
 function Profile() {
-  const [user, setUser] = useState({
-    name: "Roju Chitrakar",
-    email: "roju@gmail.com",
-    phone: "+9779866264853",
+  const { user: authUser, logout, setUser } = useAuth(); // ✅ FIXED
+  const navigate = useNavigate();
+
+  const [user, setLocalUser] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
   });
-  const [editing, setEditing] = useState(false);
-const [orders, setOrders] = useState([]);
-  // SAMPLE ORDER DATA (replace later with backend)
-  // const orders = [
-  //   {
-  //     id: "ORD123",
-  //     date: "April 10, 2026",
-  //     total: 129.99,
-  //     status: "Delivered",
-  //     items: ["Running Shoes", "Yoga Mat"],
-  //   },
-  //   {
-  //     id: "ORD124",
-  //     date: "April 15, 2026",
-  //     total: 79.99,
-  //     status: "Pending",
-  //     items: ["Wireless Headphones"],
-  //   },
-  // ];
 
   const [address, setAddress] = useState({
     fullName: "",
@@ -43,29 +25,66 @@ const [orders, setOrders] = useState([]);
     country: "",
   });
 
-  const [isEditingAddress, setIsEditingAddress] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [orders, setOrders] = useState([]);
 
-  const { logout } = useAuth();
-  const navigate = useNavigate();
+  // 🔥 LOAD USER + ADDRESS (FIXED SINGLE EFFECT)
+  useEffect(() => {
+    if (authUser) {
+      setLocalUser({
+        fullName: authUser.fullName || "",
+        email: authUser.email || "",
+        phone: authUser.phone || "",
+      });
+
+      if (authUser.address) {
+        setAddress(authUser.address);
+      }
+    }
+  }, [authUser]);
+
+  // 🔥 FETCH ORDERS
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const { data } = await axios.get("/orders/my");
+        setOrders(data);
+      } catch (error) {
+        console.error("ORDER ERROR:", error.response?.data || error.message);
+      }
+    };
+
+    fetchOrders();
+  }, []);
 
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  useEffect(() => {
-  const fetchOrders = async () => {
+  // 🔥 SAVE PROFILE (NO RELOAD)
+  const saveProfile = async () => {
     try {
-      const { data } = await axios.get("/orders/my");
-      console.log("MY ORDERS:", data);
-      setOrders(data);
+      const { data } = await axios.put("/users/profile", {
+        fullName: user.fullName,
+        email: user.email,
+        phone: user.phone,
+        address: address,
+      });
+
+      // ✅ UPDATE GLOBAL STATE
+      setUser(data);
+
+      // ✅ UPDATE STORAGE
+      localStorage.setItem("userInfo", JSON.stringify(data));
+
+      alert("Profile updated!");
+
     } catch (error) {
       console.error(error);
     }
   };
-
-  fetchOrders();
-}, []);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -75,15 +94,20 @@ const [orders, setOrders] = useState([]);
         <h1 className="text-3xl font-bold mb-8">My Account</h1>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {/* LEFT SIDE */}
+
+          {/* LEFT */}
           <div className="space-y-6">
+
             {/* PERSONAL INFO */}
             <div className="bg-white p-5 rounded-xl shadow-sm">
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between mb-4">
                 <h2 className="font-semibold text-lg">Personal Information</h2>
 
                 <button
-                  onClick={() => setEditing(!editing)}
+                  onClick={() => {
+                    if (editing) saveProfile();
+                    setEditing(!editing);
+                  }}
                   className="text-blue-600 text-sm"
                 >
                   {editing ? "Save" : "Edit"}
@@ -93,47 +117,48 @@ const [orders, setOrders] = useState([]);
               {editing ? (
                 <div className="space-y-3">
                   <input
-                    value={user.name}
-                    onChange={(e) => setUser({ ...user, name: e.target.value })}
-                    className="w-full border px-3 py-2 rounded"
-                  />
-                  <input
-                    value={user.email}
+                    value={user.fullName}
                     onChange={(e) =>
-                      setUser({ ...user, email: e.target.value })
+                      setLocalUser({ ...user, fullName: e.target.value })
                     }
                     className="w-full border px-3 py-2 rounded"
                   />
+
+                  <input
+                    value={user.email}
+                    onChange={(e) =>
+                      setLocalUser({ ...user, email: e.target.value })
+                    }
+                    className="w-full border px-3 py-2 rounded"
+                  />
+
                   <input
                     value={user.phone}
                     onChange={(e) =>
-                      setUser({ ...user, phone: e.target.value })
+                      setLocalUser({ ...user, phone: e.target.value })
                     }
                     className="w-full border px-3 py-2 rounded"
                   />
                 </div>
               ) : (
                 <div className="space-y-3 text-gray-600">
-                  <p className="flex items-center gap-2">
-                    <User size={16} /> {user.name}
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <Mail size={16} /> {user.email}
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <Phone size={16} /> {user.phone}
-                  </p>
+                  <p><User size={16}/> {user.fullName}</p>
+                  <p><Mail size={16}/> {user.email}</p>
+                  <p><Phone size={16}/> {user.phone}</p>
                 </div>
               )}
             </div>
 
             {/* ADDRESS */}
             <div className="bg-white p-5 rounded-xl shadow-sm">
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between mb-4">
                 <h2 className="font-semibold text-lg">Shipping Address</h2>
 
                 <button
-                  onClick={() => setIsEditingAddress(!isEditingAddress)}
+                  onClick={() => {
+                    if (isEditingAddress) saveProfile();
+                    setIsEditingAddress(!isEditingAddress);
+                  }}
                   className="text-blue-600 text-sm"
                 >
                   {isEditingAddress ? "Save" : "Edit"}
@@ -141,85 +166,46 @@ const [orders, setOrders] = useState([]);
               </div>
 
               {isEditingAddress ? (
-                <div className="grid grid-cols-1 gap-3">
-                  <input
-                    placeholder="Full Name"
-                    className="border px-3 py-2 rounded"
-                    value={address.fullName}
-                    onChange={(e) =>
-                      setAddress({ ...address, fullName: e.target.value })
-                    }
-                  />
+                <div className="grid gap-3">
+                  <input placeholder="Full Name" value={address.fullName}
+                    onChange={(e)=>setAddress({...address, fullName:e.target.value})}
+                    className="border px-3 py-2 rounded"/>
 
-                  <input
-                    placeholder="Phone Number"
-                    className="border px-3 py-2 rounded"
-                    value={address.phone}
-                    onChange={(e) =>
-                      setAddress({ ...address, phone: e.target.value })
-                    }
-                  />
+                  <input placeholder="Phone" value={address.phone}
+                    onChange={(e)=>setAddress({...address, phone:e.target.value})}
+                    className="border px-3 py-2 rounded"/>
 
-                  <input
-                    placeholder="Street Address"
-                    className="border px-3 py-2 rounded"
-                    value={address.street}
-                    onChange={(e) =>
-                      setAddress({ ...address, street: e.target.value })
-                    }
-                  />
+                  <input placeholder="Street" value={address.street}
+                    onChange={(e)=>setAddress({...address, street:e.target.value})}
+                    className="border px-3 py-2 rounded"/>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <input
-                      placeholder="City"
-                      className="border px-3 py-2 rounded"
-                      value={address.city}
-                      onChange={(e) =>
-                        setAddress({ ...address, city: e.target.value })
-                      }
-                    />
+                    <input placeholder="City" value={address.city}
+                      onChange={(e)=>setAddress({...address, city:e.target.value})}
+                      className="border px-3 py-2 rounded"/>
 
-                    <input
-                      placeholder="State"
-                      className="border px-3 py-2 rounded"
-                      value={address.state}
-                      onChange={(e) =>
-                        setAddress({ ...address, state: e.target.value })
-                      }
-                    />
+                    <input placeholder="State" value={address.state}
+                      onChange={(e)=>setAddress({...address, state:e.target.value})}
+                      className="border px-3 py-2 rounded"/>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <input
-                      placeholder="Postal Code"
-                      className="border px-3 py-2 rounded"
-                      value={address.postalCode}
-                      onChange={(e) =>
-                        setAddress({ ...address, postalCode: e.target.value })
-                      }
-                    />
+                    <input placeholder="Postal Code" value={address.postalCode}
+                      onChange={(e)=>setAddress({...address, postalCode:e.target.value})}
+                      className="border px-3 py-2 rounded"/>
 
-                    <input
-                      placeholder="Country"
-                      className="border px-3 py-2 rounded"
-                      value={address.country}
-                      onChange={(e) =>
-                        setAddress({ ...address, country: e.target.value })
-                      }
-                    />
+                    <input placeholder="Country" value={address.country}
+                      onChange={(e)=>setAddress({...address, country:e.target.value})}
+                      className="border px-3 py-2 rounded"/>
                   </div>
                 </div>
               ) : (
-                <div className="text-gray-600 space-y-1">
+                <div className="text-gray-600">
                   <p>{address.fullName}</p>
                   <p>{address.phone}</p>
                   <p>{address.street}</p>
-                  <p>
-                    {address.city}, {address.state}
-                  </p>
-                  <p>
-                    {address.postalCode}, {address.country}
-                  </p>
+                  <p>{address.city}, {address.state}</p>
+                  <p>{address.postalCode}, {address.country}</p>
                 </div>
               )}
             </div>
@@ -228,70 +214,96 @@ const [orders, setOrders] = useState([]);
             <div className="bg-white p-5 rounded-xl shadow-sm space-y-3">
               <h2 className="font-semibold text-lg">Quick Links</h2>
 
-              <Link to="/wishlist" className="block hover:text-blue-600">
-                My Wishlist
-              </Link>
+              <Link to="/wishlist" className="block">My Wishlist</Link>
+              <Link to="/cart" className="block">Shopping Cart</Link>
 
-              <Link to="/cart" className="block hover:text-blue-600">
-                Shopping Cart
-              </Link>
-
-              <button
-                onClick={handleLogout}
-                className="text-red-500 mt-2 hover:underline"
-              >
+              <button onClick={handleLogout} className="text-red-500">
                 Logout
               </button>
             </div>
+
           </div>
 
-          {/*  RIGHT SIDE - ORDER HISTORY */}
+          {/* RIGHT SIDE */}
           <div className="md:col-span-2 bg-white p-6 rounded-xl shadow-sm">
-            <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-              <Package size={20} />
-              Order History
-            </h2>
+  <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+    <Package size={20} /> Order History
+  </h2>
 
-            {orders.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-gray-500 mb-4">No orders yet</p>
+  {orders.length === 0 ? (
+    <p className="text-gray-500">No orders yet</p>
+  ) : (
+    <div className="space-y-6">
+      {orders.map((order) => (
+        <div
+          key={order._id}
+          className="border rounded-xl p-5 hover:shadow-md transition"
+        >
+          {/* 🔝 ORDER HEADER */}
+          <div className="flex justify-between items-center mb-3">
+            <div>
+              <p className="text-sm text-gray-500">Order ID</p>
+              <p className="font-semibold">{order._id}</p>
+            </div>
 
-                <Link to="/products">
-                  <button className="bg-blue-600 text-white px-5 py-2 rounded">
-                    Browse Products
-                  </button>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {orders.map((order) => (
-                  <div key={order._id} className="border p-4 rounded-lg">
-                    <div className="flex justify-between mb-2">
-                      <p className="font-semibold">{order.id}</p>
+            <div className="text-right">
+              <p className="text-sm text-gray-500">Date</p>
+              <p>
+                {new Date(order.createdAt).toLocaleDateString()}
+              </p>
+            </div>
 
-                      <span
-                        className={`text-sm px-2 py-1 rounded ${
-                          order.status === "Delivered"
-                            ? "bg-green-100 text-green-600"
-                            : "bg-yellow-100 text-yellow-600"
-                        }`}
-                      >
-                        {order.status}
-                      </span>
-                    </div>
-
-                    <p className="text-gray-500 text-sm">{order.date}</p>
-
-                    <p className="text-sm mt-2">
-                      Items: {order.items.map(item => item.name).join(", ")}
-                    </p>
-
-                    <p className="font-semibold mt-2">Total: ${order.total}</p>
-                  </div>
-                ))}
-              </div>
-            )}
+            <span
+              className={`text-xs px-3 py-1 rounded-full font-medium ${
+                order.isDelivered
+                  ? "bg-green-100 text-green-600"
+                  : "bg-yellow-100 text-yellow-600"
+              }`}
+            >
+              {order.isDelivered ? "Delivered" : "Pending"}
+            </span>
           </div>
+
+          {/* 📦 ITEMS */}
+          <div className="space-y-3">
+            {order.items.map((item) => (
+              <div
+                key={item._id}
+                className="flex items-center gap-4 border rounded-lg p-3"
+              >
+                {/* 🖼 IMAGE */}
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-16 h-16 object-cover rounded"
+                />
+
+                {/* 📝 DETAILS */}
+                <div className="flex-1">
+                  <p className="font-medium">{item.name}</p>
+                  <p className="text-sm text-gray-500">
+                    Qty: {item.qty}
+                  </p>
+                </div>
+
+                {/* 💰 PRICE */}
+                <p className="font-semibold">₹{item.price}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* 💳 TOTAL */}
+          <div className="flex justify-end mt-4 border-t pt-3">
+            <p className="text-lg font-bold">
+              Total: ₹{order.total}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
         </div>
       </div>
     </div>

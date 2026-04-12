@@ -1,5 +1,6 @@
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
+import User from "../models/User.js";
 
 /* =========================
    ➕ CREATE ORDER
@@ -29,8 +30,12 @@ export const createOrder = async (req, res) => {
     });
 
     const createdOrder = await order.save();
-    res.status(201).json(createdOrder);
 
+    await User.findByIdAndUpdate(req.user._id, {
+      cart: [],
+    });
+
+    res.status(201).json(createdOrder);
   } catch (error) {
     console.error("CREATE ORDER ERROR:", error);
     res.status(500).json({ message: error.message });
@@ -56,7 +61,12 @@ export const getMyOrders = async (req, res) => {
 ========================= */
 export const getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find().populate("user", "name email");
+    const orders = await Order.find()
+      .populate("user", "fullName email")
+      .sort({ createdAt: -1 });
+
+    console.log("ORDERS:", JSON.stringify(orders, null, 2)); // 🔥 DEBUG
+
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -87,7 +97,6 @@ export const markOrderDelivered = async (req, res) => {
       message: "Order marked as delivered",
       order: updatedOrder,
     });
-
   } catch (error) {
     console.error("DELIVER ERROR:", error);
     res.status(500).json({ message: error.message });
@@ -118,7 +127,6 @@ export const getAdminStats = async (req, res) => {
       totalOrders,
       productStats,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -179,7 +187,6 @@ export const getFullAdminStats = async (req, res) => {
       productStats,
       categoryStats: categoryMap,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

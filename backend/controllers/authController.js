@@ -1,7 +1,6 @@
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 
-
 // ✅ REGISTER
 export const registerUser = async (req, res) => {
   const { fullName, email, password, phone } = req.body;
@@ -17,7 +16,7 @@ export const registerUser = async (req, res) => {
   }
 
   const user = await User.create({
-    fullName,
+    fullName, // 🔥 FIX
     email,
     password,
     phone,
@@ -25,13 +24,13 @@ export const registerUser = async (req, res) => {
 
   res.status(201).json({
     _id: user._id,
-    name: user.fullName,
+    fullName: user.fullName,
     email: user.email,
     phone: user.phone,
+    address: user.address || {}, // 🔥 ADD THIS
     token: generateToken(user._id),
   });
 };
-
 
 // ✅ LOGIN  🔥 (THIS WAS MISSING OR WRONG)
 export const loginUser = async (req, res) => {
@@ -42,17 +41,17 @@ export const loginUser = async (req, res) => {
   if (user && (await user.matchPassword(password))) {
     res.json({
       _id: user._id,
-      name: user.fullName,
+      fullName: user.fullName,
       email: user.email,
       phone: user.phone,
+      address: user.address, // 🔥 THIS IS MISSING
       token: generateToken(user._id),
-      isAdmin:user.isAdmin,
+      isAdmin: user.isAdmin,
     });
   } else {
     res.status(401).json({ message: "Invalid email or password" });
   }
 };
-
 
 // ✅ GET ME
 export const getMe = async (req, res) => {

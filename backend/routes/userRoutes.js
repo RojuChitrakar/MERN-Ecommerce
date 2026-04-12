@@ -1,4 +1,4 @@
-import { toggleWishlist, getWishlist } from "../controllers/userController.js";
+import { toggleWishlist, getWishlist, updateUserProfile } from "../controllers/userController.js";
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import { addToCart, updateCartQty, getCart, removeFromCart } from "../controllers/userController.js";
@@ -17,4 +17,5 @@ router.put("/cart/:id", protect, updateCartQty);
 
 router.delete("/cart/:id", protect, removeFromCart);
 
+router.put("/profile", protect, updateUserProfile);
 export default router;

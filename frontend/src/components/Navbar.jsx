@@ -1,31 +1,32 @@
 import { useState, useRef, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { Menu, X, Heart, ShoppingCart, User, ChevronDown } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
-const categories = ["electronics", "home", "beauty", "clothing", "others"];
+
+const categories = [
+  "keyrings",
+  "incense holder",
+  "jewellery holder",
+  "planter",
+  "table decor",
+  "brush holder",
+  "fridge magnets",
+  "candle holder",
+  "others",
+];
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
-
   const [search, setSearch] = useState("");
+
   const navigate = useNavigate();
   const { cart } = useCart();
   const { wishlist } = useWishlist();
-  const handleSearch = (e) => {
-    if (e.key === "Enter" && search.trim() !== "") {
-      navigate(`/products?search=${search}`);
-    }
-  };
-  const navLinkClass = ({ isActive }) =>
-    isActive
-      ? "text-blue-600 font-semibold"
-      : "text-gray-700 hover:text-blue-600";
   const { user, logout } = useAuth();
+
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef();
 
@@ -35,68 +36,71 @@ function Navbar() {
         setProfileOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleSearch = (e) => {
+    if (e.key === "Enter" && search.trim()) {
+      navigate(`/products?search=${search}`);
+    }
+  };
+
   return (
-    <nav className="sticky top-0 z-50 bg-white shadow-sm border-b w-full ">
-      <div className="w-full px-8 py-3 flex items-center justify-between">
-        {/* LEFT */}
-        <div className="flex items-center gap-12">
-          <NavLink to="/" className="text-2xl font-bold text-blue-600">
-            ShopHub
+    <nav className="sticky top-0 z-50 bg-[#fdf8f6] border-b">
+      <div className="px-8 py-4 flex items-center justify-between">
+
+        {/* LOGO */}
+        <Link
+          to="/"
+          className="text-2xl font-semibold text-[#d8a48f]"
+        >
+          ClayCove
+        </Link>
+
+        {/* CENTER */}
+        <div className="hidden md:flex items-center gap-6">
+
+          <NavLink to="/" className="hover:text-[#d8a48f]">
+            Home
           </NavLink>
 
-          <div className="hidden md:flex items-center gap-6">
-            <NavLink to="/" className={navLinkClass}>
-              Home
-            </NavLink>
+          <NavLink to="/products" className="hover:text-[#d8a48f]">
+            Shop
+          </NavLink>
 
-            <NavLink to="/products" className={navLinkClass}>
-              All Products
-            </NavLink>
+          {/* CATEGORIES */}
+          <div className="relative">
+            <button
+              onClick={() => setCategoryOpen(!categoryOpen)}
+              className="flex items-center gap-1 hover:text-[#d8a48f]"
+            >
+              Categories <ChevronDown size={16} />
+            </button>
 
-            {/* CATEGORY DROPDOWN */}
-            <div className="relative">
-              <button
-                onClick={() => setCategoryOpen(!categoryOpen)}
-                className="flex items-center gap-1 hover:text-blue-600"
-              >
-                Categories <ChevronDown size={16} />
-              </button>
-
-              {categoryOpen && (
-                <div className="absolute top-10 left-0 bg-white shadow-lg rounded w-48 border z-50">
-                  {categories.map((cat) => (
-                    <NavLink
-                      key={cat}
-                      to={`/products?category=${cat}`}
-                      onClick={() => setCategoryOpen(false)}
-                      className={({ isActive }) =>
-                        `block px-4 py-2 capitalize ${
-                          isActive
-                            ? "bg-blue-100 text-blue-600 font-semibold"
-                            : "hover:bg-gray-100"
-                        }`
-                      }
-                    >
-                      {cat}
-                    </NavLink>
-                  ))}
-                </div>
-              )}
-            </div>
+            {categoryOpen && (
+              <div className="absolute top-10 bg-white rounded-2xl shadow-lg w-52 p-2">
+                {categories.map((cat) => (
+                  <Link
+                    key={cat}
+                    to={`/products?category=${cat}`}
+                    onClick={() => setCategoryOpen(false)}
+                    className="block px-4 py-2 rounded-xl hover:bg-[#f7ebe8] capitalize"
+                  >
+                    {cat}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         {/* SEARCH */}
-        <div className="hidden md:flex flex-1 mx-10 max-w-2xl">
+        <div className="hidden md:flex flex-1 mx-8 max-w-md">
           <input
             type="text"
-            placeholder="Search products..."
-            className="w-full border rounded-full px-4 py-2"
+            placeholder="Search handmade items..."
+            className="w-full bg-white border rounded-full px-4 py-2 focus:outline-none"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={handleSearch}
@@ -104,50 +108,48 @@ function Navbar() {
         </div>
 
         {/* RIGHT */}
-        <div className="hidden md:flex items-center gap-6 pr-2">
+        <div className="hidden md:flex items-center gap-5">
+
+          <Link to="/wishlist" className="relative">
+            <Heart />
+            {wishlist.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-[#d8a48f] text-white text-xs px-1.5 rounded-full">
+                {wishlist.length}
+              </span>
+            )}
+          </Link>
+
+          <Link to="/cart" className="relative">
+            <ShoppingCart />
+            {cart.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-[#d8a48f] text-white text-xs px-1.5 rounded-full">
+                {cart.length}
+              </span>
+            )}
+          </Link>
+
+          {/* PROFILE */}
           {user ? (
             <div className="relative" ref={profileRef}>
-              {/* PROFILE BUTTON */}
-              <button
-                onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center gap-2 hover:text-blue-600"
-              >
-                <User size={20} />
-                <span className="text-sm">
-                  {user?.fullName || user?.email || "Profile"}
-                </span>
+              <button onClick={() => setProfileOpen(!profileOpen)}>
+                <User />
               </button>
 
-              {/* DROPDOWN */}
               {profileOpen && (
-                <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg border p-3 z-50">
-                  {/* USER INFO */}
-                  <div className="mb-3">
-                    <p className="font-semibold">{user?.fullName || "User"}</p>
-                    <p className="text-sm text-gray-500">{user?.email}</p>
-                  </div>
-
-                  <hr className="mb-2" />
-
-                  {/* MY PROFILE */}
+                <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow p-3">
                   <button
-                    onClick={() => {
-                      navigate("/profile");
-                      setProfileOpen(false);
-                    }}
-                    className="w-full text-left px-2 py-2 hover:bg-gray-100 rounded flex items-center gap-2"
+                    onClick={() => navigate("/profile")}
+                    className="block w-full text-left px-2 py-2 hover:bg-[#f7ebe8] rounded"
                   >
-                    <User size={16} />
-                    My Profile
+                    Profile
                   </button>
 
-                  {/* LOGOUT */}
                   <button
                     onClick={() => {
                       logout();
-                      navigate("/login");
+                      navigate("/");
                     }}
-                    className="w-full text-left px-2 py-2 text-red-500 hover:bg-red-50 rounded flex items-center gap-2"
+                    className="block w-full text-left px-2 py-2 text-red-500 hover:bg-red-50 rounded"
                   >
                     Logout
                   </button>
@@ -155,115 +157,15 @@ function Navbar() {
               )}
             </div>
           ) : (
-            <Link to="/login" className="text-sm hover:text-blue-600">
-              Login / Signup
-            </Link>
+            <Link to="/login">Login</Link>
           )}
-          <Link to="/wishlist" className="relative">
-            <Heart className="cursor-pointer hover:text-blue-600" size={22} />
-
-            {wishlist.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 rounded-full">
-                {wishlist.length}
-              </span>
-            )}
-          </Link>
-          <Link to="/cart" className="relative">
-            <ShoppingCart className="cursor-pointer" />
-
-            {cart.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-1.5 rounded-full">
-                {cart.length}
-              </span>
-            )}
-          </Link>
         </div>
 
-        {/* MOBILE BUTTON */}
-        <div className="md:hidden flex items-center gap-4">
-          <button onClick={() => setMenuOpen(true)}>
-            <Menu />
-          </button>
-        </div>
+        {/* MOBILE */}
+        <button className="md:hidden" onClick={() => setMenuOpen(true)}>
+          <Menu />
+        </button>
       </div>
-
-      {/*  SIDE DRAWER */}
-      <div
-        className={`fixed top-0 left-0 h-full w-72 bg-white shadow-lg z-50 transform ${
-          menuOpen ? "translate-x-0" : "-translate-x-full"
-        } transition-transform duration-300`}
-      >
-        {/* HEADER */}
-        <div className="flex justify-between items-center p-4 border-b">
-          <h1 className="text-xl font-bold">ShopHub</h1>
-          <button onClick={() => setMenuOpen(false)}>
-            <X />
-          </button>
-        </div>
-
-        {/* CONTENT */}
-        <div className="p-4 space-y-4">
-          {/* SEARCH */}
-          <input
-            type="text"
-            placeholder="Search products..."
-            className="w-full border rounded-full px-4 py-2"
-          />
-
-          {/* LINKS */}
-          <div className="flex flex-col gap-4 mt-4">
-            <NavLink
-              to="/"
-              onClick={() => setMenuOpen(false)}
-              className={navLinkClass}
-            >
-              Home
-            </NavLink>
-
-            <NavLink
-              to="/products"
-              onClick={() => setMenuOpen(false)}
-              className={navLinkClass}
-            >
-              All Products
-            </NavLink>
-
-            <hr />
-
-            {/* CATEGORIES */}
-            <p className="text-gray-500">Categories</p>
-
-            {categories.map((cat) => (
-              <NavLink
-                key={cat}
-                to={`/products?category=${cat}`}
-                onClick={() => setMenuOpen(false)}
-                className={({ isActive }) =>
-                  `capitalize px-2 py-1 rounded transition ${
-                    isActive
-                      ? "bg-blue-100 text-blue-600 font-semibold"
-                      : "hover:bg-gray-100"
-                  }`
-                }
-              >
-                {cat}
-              </NavLink>
-            ))}
-
-            <hr />
-
-            <p className="hover:text-blue-600 cursor-pointer">My Profile</p>
-          </div>
-        </div>
-      </div>
-
-      {/* OVERLAY */}
-      {menuOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-30"
-          onClick={() => setMenuOpen(false)}
-        />
-      )}
     </nav>
   );
 }

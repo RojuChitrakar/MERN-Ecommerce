@@ -42,7 +42,7 @@ export const addToCart = async (req, res) => {
     }
 
     const exist = user.cart.find(
-      (item) => item.product.toString() === productId
+      (item) => item.product.toString() === productId,
     );
 
     if (exist) {
@@ -98,4 +98,40 @@ export const removeFromCart = async (req, res) => {
   const updatedUser = await User.findById(user._id).populate("cart.product");
 
   res.json(updatedUser.cart);
+};
+
+export const updateUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.fullName = req.body.fullName || user.fullName;
+    user.email = req.body.email || user.email;
+    user.phone = req.body.phone || user.phone;
+
+    user.address = {
+      fullName: req.body.address?.fullName || "",
+      phone: req.body.address?.phone || "",
+      street: req.body.address?.street || "",
+      city: req.body.address?.city || "",
+      state: req.body.address?.state || "",
+      postalCode: req.body.address?.postalCode || "",
+      country: req.body.address?.country || "",
+    };
+    const updatedUser = await user.save();
+    
+    // 🔥 RETURN CLEAN USER OBJECT
+    res.json({
+      _id: updatedUser._id,
+      fullName: updatedUser.fullName,
+      email: updatedUser.email,
+      phone: updatedUser.phone,
+      address: updatedUser.address, // 🔥 THIS FIXES YOUR ISSUE
+      isAdmin: updatedUser.isAdmin,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+  console.log("REQ BODY:", req.body);
 };

@@ -4,6 +4,9 @@ import axios from "../utils/axios.js";
 function AdminProducts() {
   const [products, setProducts] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const [search, setSearch] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -30,10 +33,14 @@ function AdminProducts() {
     fetchProducts();
   }, []);
 
+  // 🔍 FILTER PRODUCTS
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase())
+  );
+
   // 📸 HANDLE IMAGE SELECT
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-
     setImages((prev) => [...prev, ...files]);
 
     const newPreview = files.map((file) => URL.createObjectURL(file));
@@ -65,12 +72,11 @@ function AdminProducts() {
       });
 
       await axios.post("/products", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       resetForm();
+      setShowModal(false);
       fetchProducts();
     } catch (error) {
       console.error("ADD ERROR:", error.response?.data || error.message);
@@ -80,6 +86,7 @@ function AdminProducts() {
   // ✏️ EDIT
   const handleEdit = (product) => {
     setEditingProduct(product);
+    setShowModal(true);
 
     setForm({
       name: product.name || "",
@@ -107,12 +114,11 @@ function AdminProducts() {
       });
 
       await axios.put(`/products/${editingProduct._id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       resetForm();
+      setShowModal(false);
       fetchProducts();
     } catch (error) {
       console.error("UPDATE ERROR:", error.response?.data || error.message);
@@ -142,146 +148,183 @@ function AdminProducts() {
   };
 
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-4">📦 Manage Products</h2>
+    <div className="p-6">
 
-      {/* ================= FORM ================= */}
-      <div className="bg-white p-5 rounded-xl shadow mb-6 grid gap-3">
+      {/* 🔵 HEADER */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold"> Products</h2>
 
-        <input
-          placeholder="Product Name"
-          value={form.name || ""}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="border p-2 rounded"
-        />
+        <div className="flex gap-3">
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="border px-4 py-2 rounded-lg w-64"
+          />
 
-        <input
-          placeholder="Price"
-          value={form.price || ""}
-          onChange={(e) => setForm({ ...form, price: e.target.value })}
-          className="border p-2 rounded"
-        />
-
-        <input
-          placeholder="Category"
-          value={form.category || ""}
-          onChange={(e) => setForm({ ...form, category: e.target.value })}
-          className="border p-2 rounded"
-        />
-
-        <input
-          placeholder="Stock"
-          value={form.countInStock || ""}
-          onChange={(e) =>
-            setForm({ ...form, countInStock: e.target.value })
-          }
-          className="border p-2 rounded"
-        />
-
-        <textarea
-          placeholder="Description"
-          value={form.description || ""}
-          onChange={(e) =>
-            setForm({ ...form, description: e.target.value })
-          }
-          className="border p-2 rounded"
-        />
-
-        {/* 📸 IMAGE UPLOAD */}
-        <input
-          type="file"
-          multiple
-          onChange={handleImageChange}
-          className="border p-2 rounded"
-        />
-
-        {/* 🔥 IMAGE PREVIEW */}
-        <div className="flex gap-2 flex-wrap">
-          {preview.map((img, i) => (
-            <div key={i} className="relative">
-              <img
-                src={img}
-                alt=""
-                className="w-16 h-16 object-cover rounded border"
-              />
-
-              <button
-                onClick={() => removeImage(i)}
-                className="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded"
-              >
-                X
-              </button>
-            </div>
-          ))}
+          <button
+            onClick={() => {
+              resetForm();
+              setShowModal(true);
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+          >
+            + Add Product
+          </button>
         </div>
-
-        {/* 🔥 BUTTON */}
-        {editingProduct ? (
-          <button
-            onClick={handleUpdate}
-            className="bg-green-600 text-white py-2 rounded"
-          >
-            Update Product
-          </button>
-        ) : (
-          <button
-            onClick={handleAdd}
-            className="bg-blue-600 text-white py-2 rounded"
-          >
-            Add Product
-          </button>
-        )}
       </div>
 
-      {/* ================= PRODUCT LIST ================= */}
-      <div className="bg-white p-5 rounded-xl shadow">
+      {/* 🔵 TABLE */}
+      <div className="bg-white rounded-xl shadow overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-100 text-left">
+            <tr>
+              <th className="p-3">Product</th>
+              <th className="p-3">Price</th>
+              <th className="p-3">Stock</th>
+              <th className="p-3">Images</th>
+              <th className="p-3">Actions</th>
+            </tr>
+          </thead>
 
-        <div className="grid grid-cols-5 font-semibold border-b pb-2 mb-2">
-          <span>Name</span>
-          <span>Price</span>
-          <span>Stock</span>
-          <span>Images</span>
-          <span>Actions</span>
-        </div>
+          <tbody>
+            {filteredProducts.map((p) => (
+              <tr key={p._id} className="border-t hover:bg-gray-50">
+                <td className="p-3 font-medium">{p.name}</td>
+                <td className="p-3">${p.price}</td>
+                <td className="p-3">{p.countInStock}</td>
 
-        {products.map((p) => (
-          <div
-            key={p._id}
-            className="grid grid-cols-5 items-center border-b py-2"
-          >
-            <span>{p.name}</span>
-            <span>${p.price}</span>
-            <span>{p.countInStock}</span>
+                <td className="p-3 flex gap-1">
+                  {p.images?.slice(0, 2).map((img, i) => (
+                    <img
+                      key={i}
+                      src={img}
+                      className="w-10 h-10 rounded object-cover"
+                    />
+                  ))}
+                </td>
 
-            <div className="flex gap-1">
-              {p.images?.slice(0, 2).map((img, i) => (
-                <img
-                  key={i}
-                  src={img}
-                  alt=""
-                  className="w-10 h-10 object-cover rounded"
-                />
-              ))}
+                <td className="p-3 flex gap-2">
+                  <button
+                    onClick={() => handleEdit(p)}
+                    className="text-yellow-600"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(p._id)}
+                    className="text-red-600"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* 🔥 MODAL */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-xl w-[500px] max-h-[90vh] overflow-y-auto">
+
+            <h2 className="text-xl font-semibold mb-4">
+              {editingProduct ? "Edit Product" : "Add Product"}
+            </h2>
+
+            <div className="grid gap-3">
+              <input
+                placeholder="Product Name"
+                value={form.name}
+                onChange={(e) =>
+                  setForm({ ...form, name: e.target.value })
+                }
+                className="border p-2 rounded"
+              />
+
+              <input
+                placeholder="Price"
+                value={form.price}
+                onChange={(e) =>
+                  setForm({ ...form, price: e.target.value })
+                }
+                className="border p-2 rounded"
+              />
+
+              <input
+                placeholder="Category"
+                value={form.category}
+                onChange={(e) =>
+                  setForm({ ...form, category: e.target.value })
+                }
+                className="border p-2 rounded"
+              />
+
+              <input
+                placeholder="Stock"
+                value={form.countInStock}
+                onChange={(e) =>
+                  setForm({ ...form, countInStock: e.target.value })
+                }
+                className="border p-2 rounded"
+              />
+
+              <textarea
+                placeholder="Description"
+                value={form.description}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
+                className="border p-2 rounded"
+              />
+
+              <input
+                type="file"
+                multiple
+                onChange={handleImageChange}
+                className="border p-2 rounded"
+              />
+
+              <div className="flex gap-2 flex-wrap">
+                {preview.map((img, i) => (
+                  <div key={i} className="relative">
+                    <img
+                      src={img}
+                      className="w-16 h-16 object-cover rounded border"
+                    />
+
+                    <button
+                      onClick={() => removeImage(i)}
+                      className="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded"
+                    >
+                      X
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-3 mt-4">
               <button
-                onClick={() => handleEdit(p)}
-                className="bg-yellow-500 text-white px-2 py-1 rounded"
+                onClick={editingProduct ? handleUpdate : handleAdd}
+                className="bg-blue-600 text-white px-4 py-2 rounded"
               >
-                Edit
+                Save
               </button>
 
               <button
-                onClick={() => handleDelete(p._id)}
-                className="bg-red-500 text-white px-2 py-1 rounded"
+                onClick={() => setShowModal(false)}
+                className="border px-4 py-2 rounded"
               >
-                Delete
+                Cancel
               </button>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

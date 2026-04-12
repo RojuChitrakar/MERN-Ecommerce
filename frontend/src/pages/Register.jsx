@@ -54,7 +54,7 @@ function Register() {
         phone: form.phone,
       });
 
-      navigate("/checkout");
+      navigate("/");
     } catch (error) {
       console.log("ERROR:", error.message);
       

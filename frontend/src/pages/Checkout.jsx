@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import axios from "../utils/axios.js";
 
 function Checkout() {
-  const { cart,clearCart } = useCart();
+  const { cart, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -15,7 +15,7 @@ function Checkout() {
   const [shipping, setShipping] = useState({
     firstName: "",
     lastName: "",
-    email: user?.email || "",
+    email: "",
     phone: "",
     address: "",
     city: "",
@@ -26,10 +26,10 @@ function Checkout() {
   // ✅ PAYMENT METHOD
   const [paymentMethod, setPaymentMethod] = useState("esewa");
 
-  // ✅ CALCULATIONS (BACKEND STRUCTURE)
+  // ✅ CALCULATIONS
   const subtotal = cart.reduce(
     (acc, item) => acc + item.product.price * item.qty,
-    0,
+    0
   );
   const tax = subtotal * 0.1;
   const total = subtotal + tax;
@@ -41,6 +41,30 @@ function Checkout() {
     }
   }, [user, navigate, location]);
 
+  // 🔥 AUTO-FILL FROM PROFILE
+  useEffect(() => {
+    if (user?.address) {
+      const fullName = user.address.fullName || "";
+      const nameParts = fullName.split(" ");
+
+      setShipping({
+        firstName: nameParts[0] || "",
+        lastName: nameParts.slice(1).join(" ") || "",
+        email: user.email || "",
+        phone: user.address.phone || "",
+        address: user.address.street || "",
+        city: user.address.city || "",
+        state: user.address.state || "",
+        zip: user.address.postalCode || "",
+      });
+    } else {
+      setShipping((prev) => ({
+        ...prev,
+        email: user?.email || "",
+      }));
+    }
+  }, [user]);
+
   if (!user) return null;
 
   // ✅ HANDLE INPUT
@@ -50,65 +74,68 @@ function Checkout() {
 
   // ✅ PLACE ORDER
   const handlePlaceOrder = async () => {
-  const { firstName, lastName, phone, address, city, state, zip } = shipping;
+    const { firstName, lastName, phone, address, city, state, zip } = shipping;
 
-  // 🔥 VALIDATION
-  if (!firstName || !lastName || !phone || !address || !city || !state || !zip) {
-    alert("⚠️ Please fill all shipping details before placing order");
-    return;
-  }
+    if (!firstName || !lastName || !phone || !address || !city || !state || !zip) {
+      alert("⚠️ Please fill all shipping details before placing order");
+      return;
+    }
 
-  try {
-    const { data } = await axios.post("/orders", {
-      cartItems: cart,
-      shippingAddress: {
-        fullName: `${firstName} ${lastName}`,
-        phone,
-        street: address,
-        city,
-        state,
-        postalCode: zip,
-        country: "Nepal",
-      },
-      paymentMethod,
-      total,
-    });
-    clearCart();
+    try {
+      const { data } = await axios.post("/orders", {
+        cartItems: cart,
+        shippingAddress: {
+          fullName: `${firstName} ${lastName}`,
+          phone,
+          street: address,
+          city,
+          state,
+          postalCode: zip,
+          country: "Nepal",
+        },
+        paymentMethod,
+        total,
+      });
 
-    // console.log("ORDER CREATED:", data);
+      clearCart();
 
-    // ✅ redirect after saving
-    navigate("/order-success", {
-      state: { orderId: data._id },
-    });
+      navigate("/order-success", {
+        state: { orderId: data._id },
+      });
 
-  } catch (error) {
-    console.error("ORDER ERROR:", error.response?.data || error.message);
-    alert("Order failed");
-  }
-};
+    } catch (error) {
+      console.error("ORDER ERROR:", error.response?.data || error.message);
+      alert("Order failed");
+    }
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-6 py-10 grid md:grid-cols-3 gap-8">
+        
         {/* 🔵 LEFT SIDE */}
         <div className="md:col-span-2 space-y-6">
+
           {/* SHIPPING */}
           <div className="bg-white p-6 rounded-xl shadow">
             <h2 className="text-xl font-semibold mb-4">Shipping Information</h2>
 
             <div className="grid grid-cols-2 gap-4">
+
               <input
                 name="firstName"
                 placeholder="First Name"
+                value={shipping.firstName || ""}
                 onChange={handleChange}
                 className="border p-2 rounded"
               />
+
               <input
                 name="lastName"
                 placeholder="Last Name"
+                value={shipping.lastName || ""}
                 onChange={handleChange}
                 className="border p-2 rounded"
               />
@@ -117,11 +144,13 @@ function Checkout() {
                 name="email"
                 value={shipping.email}
                 readOnly
-                className="border p-2 rounded col-span-2"
+                className="border p-2 rounded col-span-2 bg-gray-100"
               />
+
               <input
                 name="phone"
                 placeholder="Phone"
+                value={shipping.phone || ""}
                 onChange={handleChange}
                 className="border p-2 rounded col-span-2"
               />
@@ -129,6 +158,7 @@ function Checkout() {
               <input
                 name="address"
                 placeholder="Address"
+                value={shipping.address || ""}
                 onChange={handleChange}
                 className="border p-2 rounded col-span-2"
               />
@@ -136,12 +166,15 @@ function Checkout() {
               <input
                 name="city"
                 placeholder="City"
+                value={shipping.city || ""}
                 onChange={handleChange}
                 className="border p-2 rounded"
               />
+
               <input
                 name="state"
                 placeholder="State"
+                value={shipping.state || ""}
                 onChange={handleChange}
                 className="border p-2 rounded"
               />
@@ -149,6 +182,7 @@ function Checkout() {
               <input
                 name="zip"
                 placeholder="ZIP Code"
+                value={shipping.zip || ""}
                 onChange={handleChange}
                 className="border p-2 rounded col-span-2"
               />
@@ -188,7 +222,7 @@ function Checkout() {
           </div>
         </div>
 
-        {/* 🔵 RIGHT SIDE (SUMMARY) */}
+        {/* 🔵 RIGHT SIDE */}
         <div className="bg-white p-6 rounded-xl shadow h-fit sticky top-24">
           <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
 
@@ -198,7 +232,7 @@ function Checkout() {
                 <p className="font-medium">{item.product.name}</p>
                 <p className="text-sm text-gray-500">Qty: {item.qty}</p>
               </div>
-              <span>${(item.product.price * item.qty).toFixed(2)}</span>
+              <span>₹{(item.product.price * item.qty).toFixed(2)}</span>
             </div>
           ))}
 
@@ -207,7 +241,7 @@ function Checkout() {
           <div className="space-y-2 text-gray-600">
             <div className="flex justify-between">
               <span>Subtotal</span>
-              <span>${subtotal.toFixed(2)}</span>
+              <span>₹{subtotal.toFixed(2)}</span>
             </div>
 
             <div className="flex justify-between">
@@ -217,14 +251,14 @@ function Checkout() {
 
             <div className="flex justify-between">
               <span>Tax (10%)</span>
-              <span>${tax.toFixed(2)}</span>
+              <span>₹{tax.toFixed(2)}</span>
             </div>
 
             <hr />
 
             <div className="flex justify-between font-bold text-lg">
               <span>Total</span>
-              <span>${total.toFixed(2)}</span>
+              <span>₹{total.toFixed(2)}</span>
             </div>
           </div>
 

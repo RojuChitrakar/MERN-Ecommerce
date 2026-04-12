@@ -1,88 +1,65 @@
 import { Link } from "react-router-dom";
-import {
-  FaFacebookF,
-  FaTwitter,
-  FaInstagram,
-  FaLinkedinIn,
-} from "react-icons/fa";
+
+const categories = [
+  "keyrings",
+  "incense holder",
+  "jewellery holder",
+  "planter",
+  "table decor",
+  "brush holder",
+  "fridge magnets",
+  "candle holder",
+  "others",
+];
 
 function Footer() {
   return (
-    <footer className="bg-gray-50 border-t mt-16">
-      <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
-        {/* 🔵 BRAND */}
+    <footer className="bg-[#f7ebe8] mt-16">
+
+      <div className="max-w-7xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-10">
+
+        {/* BRAND */}
         <div>
-          <h2 className="text-2xl font-bold text-blue-600 mb-4">ShopHub</h2>
+          <h2 className="text-2xl font-semibold text-[#d8a48f] mb-3">
+            ClayCove
+          </h2>
           <p className="text-sm text-gray-600">
-            Discover the best products across electronics, fashion, home, and
-            more — all in one place.
+            Handmade clay creations crafted with care, bringing warmth and charm
+            into your everyday life.
           </p>
         </div>
 
-        {/* 🟡 LINKS */}
+        {/* LINKS */}
         <div>
-          <h3 className="font-semibold text-gray-800 mb-4">Quick Links</h3>
-          <ul className="space-y-2 text-gray-600">
-            <li>
-              <Link to="/" className="hover:text-blue-600 transition">
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link to="/products" className="hover:text-blue-600 transition">
-                All Products
-              </Link>
-            </li>
-            <li>
-              <Link to="/cart" className="hover:text-blue-600 transition">
-                Cart
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        {/* 🟣 CATEGORIES */}
-        <div>
-          <h3 className="font-semibold text-gray-800 mb-4">Categories</h3>
-          <ul className="space-y-2 text-gray-600">
-            {["electronics", "home", "beauty", "clothing", "others"].map(
-              (cat) => (
-                <li key={cat}>
-                  <Link
-                    to={`/products?category=${cat}`}
-                    state={{ from: "footer" }} // 🔥 ADD THIS LINE
-                    className="hover:text-blue-600 capitalize transition"
-                  >
-                    {cat}
-                  </Link>
-                </li>
-              ),
-            )}
-          </ul>
-        </div>
-
-        {/* 🔴 SOCIAL */}
-        <div>
-          <h3 className="font-semibold text-gray-800 mb-4">Follow Us</h3>
-
-          <div className="flex gap-3">
-            {[FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn].map(
-              (Icon, index) => (
-                <div
-                  key={index}
-                  className="p-2 rounded-full bg-white shadow hover:shadow-md hover:text-blue-600 cursor-pointer transition"
-                >
-                  <Icon size={16} />
-                </div>
-              ),
-            )}
+          <h3 className="font-medium mb-3 text-gray-800">Explore</h3>
+          <div className="flex flex-col gap-2 text-sm text-gray-600">
+            <Link to="/" className="hover:text-[#d8a48f]">Home</Link>
+            <Link to="/products" className="hover:text-[#d8a48f]">Shop</Link>
+            <Link to="/cart" className="hover:text-[#d8a48f]">Cart</Link>
           </div>
         </div>
+
+        {/* CATEGORIES */}
+        <div>
+          <h3 className="font-medium mb-3 text-gray-800">Categories</h3>
+          <div className="flex flex-col gap-2 text-sm text-gray-600">
+            {categories.map((cat) => (
+              <Link
+                key={cat}
+                to={`/products?category=${cat}`}
+                className="hover:text-[#d8a48f] capitalize"
+              >
+                {cat}
+              </Link>
+            ))}
+          </div>
+        </div>
+
       </div>
 
-      {/* 🔽 BOTTOM */}
-      <div className="text-center py-4 text-sm text-gray-500 border-t">
-        © {new Date().getFullYear()} ShopHub. All rights reserved.
+      {/* BOTTOM */}
+      <div className="text-center text-sm text-gray-500 py-4 border-t">
+        © {new Date().getFullYear()} ClayCove. Handmade with care.
       </div>
     </footer>
   );

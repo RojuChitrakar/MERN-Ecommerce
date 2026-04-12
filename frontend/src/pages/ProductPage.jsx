@@ -4,150 +4,133 @@ import { useState, useEffect, useRef } from "react";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { Heart, ShoppingCart } from "lucide-react";
-import { Link } from "react-router-dom";
-import { fetchProductById } from "../api/productApi";
-import { addReview } from "../api/productApi";
+import { fetchProductById, addReview } from "../api/productApi";
+
 function ProductPage() {
-  const reviewRef = useRef(null);
   const { id } = useParams();
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [id]); // ✅ ADD id
+  const reviewRef = useRef(null);
+
   const [product, setProduct] = useState(null);
+  const [qty, setQty] = useState(1);
+  const [showForm, setShowForm] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
-  const [qty, setQty] = useState(1);
-  const [showAllReviews, setShowAllReviews] = useState(false);
-
-  const [showForm, setShowForm] = useState(false);
-  const [reviews, setReviews] = useState([]);
-
-  useEffect(() => {
-    if (product?.reviewsData) {
-      setReviews(product.reviewsData);
-    }
-  }, [product]);
-
   const [newReview, setNewReview] = useState({
-    name: "",
     rating: 5,
     comment: "",
   });
 
-  const handleSubmitReview = async () => {
-    if (!newReview.comment) return;
-
-    try {
-      const data = await addReview(product._id, {
-        rating: newReview.rating,
-        comment: newReview.comment,
-      });
-
-      setReviews(data.reviewsData);
-
-      setShowForm(false);
-
-      setNewReview({
-        rating: 5,
-        comment: "",
-      });
-    } catch (error) {
-      alert(error.response?.data?.message || "Error submitting review");
-    }
-  };
-
-  // ⭐ LIMIT REVIEWS
-  const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 5);
-
-  // 🔥 RELATED PRODUCTS
-  const related = [];
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [id]);
 
   useEffect(() => {
     const loadProduct = async () => {
-      try {
-        const data = await fetchProductById(id);
-        setProduct(data);
-      } catch (error) {
-        console.error(error);
-      }
+      const data = await fetchProductById(id);
+      setProduct(data);
+      setReviews(data.reviewsData || []);
     };
-
     loadProduct();
   }, [id]);
 
-  if (!product) {
-    return <h1>Loading...</h1>;
-  }
+  const handleSubmitReview = async () => {
+    if (!newReview.comment) return;
+
+    const data = await addReview(product._id, newReview);
+    setReviews(data.reviewsData);
+
+    setShowForm(false);
+    setNewReview({ rating: 5, comment: "" });
+  };
+
+  if (!product) return <div className="p-10">Loading...</div>;
+
   const totalReviews = reviews.length;
 
   const averageRating =
     totalReviews > 0
       ? (
-          reviews.reduce((acc, item) => acc + item.rating, 0) / totalReviews
+          reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews
         ).toFixed(1)
       : 0;
-  const liked = product ? isInWishlist(product._id) : false;
+
+  const liked = isInWishlist(product._id);
+
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-[#fdf8f6] min-h-screen animate-fadeIn">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        {/* 🔵 TOP SECTION */}
-        <div className="grid md:grid-cols-2 gap-10">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+
+        {/* TOP SECTION */}
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+
           {/* IMAGE */}
-          <img
-            src={product.image}
-            className="w-full h-[450px] object-cover rounded-xl"
-          />
+          <div className="overflow-hidden rounded-3xl shadow">
+            <img
+              src={product.image}
+              className="w-full h-[450px] object-cover hover:scale-105 transition duration-500"
+            />
+          </div>
 
           {/* DETAILS */}
-          <div>
-            <p className="text-sm text-gray-500 uppercase">
+          <div className="space-y-4">
+
+            <p className="text-sm text-gray-400 uppercase">
               {product.category}
             </p>
 
-            <h1 className="text-3xl font-bold mt-2">{product.name}</h1>
+            <h1 className="text-4xl font-semibold text-gray-800">
+              {product.name}
+            </h1>
 
-            {/* RATING */}
-            <p className="text-yellow-500 mt-2">
+            <p className="text-yellow-500 text-sm">
               ⭐ {averageRating} ({totalReviews} reviews)
             </p>
 
-            {/* PRICE */}
-            <p className="text-3xl font-bold mt-4">${product.price}</p>
+            <p className="text-3xl font-semibold text-gray-800">
+              ₹{product.price}
+            </p>
 
-            {/* DESCRIPTION */}
-            <p className="text-gray-600 mt-4">{product.description}</p>
+            <p className="text-gray-600 text-sm">
+              {product.description}
+            </p>
 
             {/* STOCK */}
-            <span className="inline-block mt-3 px-3 py-1 bg-green-100 text-green-700 rounded">
+            <span className="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
               In Stock
             </span>
 
-            {/* QTY + BUTTONS */}
-            <div className="flex items-center gap-4 mt-6">
+            {/* ACTIONS */}
+            <div className="flex items-center gap-4 pt-4">
+
               {/* QTY */}
-              <div className="flex items-center border rounded-lg">
+              <div className="flex items-center border rounded-full overflow-hidden">
                 <button
                   onClick={() => setQty(Math.max(1, qty - 1))}
-                  className="px-3 py-1"
+                  className="px-4 py-2 hover:bg-gray-100"
                 >
                   -
                 </button>
 
                 <span className="px-4">{qty}</span>
 
-                <button onClick={() => setQty(qty + 1)} className="px-3 py-1">
+                <button
+                  onClick={() => setQty(qty + 1)}
+                  className="px-4 py-2 hover:bg-gray-100"
+                >
                   +
                 </button>
               </div>
 
               {/* ADD TO CART */}
               <button
-                onClick={() => addToCart({ ...product, qty })}
-                className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+                onClick={() => addToCart(product, qty)}
+                className="flex items-center gap-2 bg-[#c07c52] text-white px-6 py-3 rounded-full hover:scale-105 transition"
               >
                 <ShoppingCart size={18} />
                 Add to Cart
@@ -156,55 +139,60 @@ function ProductPage() {
               {/* WISHLIST */}
               <button
                 onClick={() => toggleWishlist(product)}
-                className="p-3 border rounded-lg"
+                className="p-3 border rounded-full hover:bg-gray-100 transition"
               >
-                <Heart className={liked ? "text-red-500 fill-red-500" : ""} />
+                <Heart
+                  className={
+                    liked ? "text-[#c07c52] fill-[#c07c52]" : ""
+                  }
+                />
               </button>
             </div>
 
             {/* FEATURES */}
-            <div className="mt-6 space-y-2 text-gray-600 text-sm">
-              <p>✔ Free shipping on orders over $50</p>
-              <p>✔ 30-day return policy</p>
-              <p>✔ Secure checkout</p>
+            <div className="text-sm text-gray-500 space-y-1 pt-4">
+              <p>✔ Handmade with care</p>
+              <p>✔ Eco-friendly materials</p>
+              <p>✔ Unique artisan design</p>
             </div>
           </div>
         </div>
 
-        {/* ⭐ REVIEWS */}
-        <div className="mt-12">
+        {/* REVIEWS */}
+        <div className="mt-16">
+
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Customer Reviews</h2>
+            <h2 className="text-xl font-semibold text-gray-800">
+              Customer Reviews
+            </h2>
 
             <button
               onClick={() => {
                 setShowForm(true);
-
                 setTimeout(() => {
                   reviewRef.current?.scrollIntoView({
                     behavior: "smooth",
-                    block: "start",
                   });
                 }, 100);
               }}
-              className="bg-blue-600 text-white px-4 py-2 rounded"
+              className="bg-[#c07c52] text-white px-4 py-2 rounded-full hover:scale-105 transition"
             >
               Write a Review
             </button>
           </div>
+
+          {/* FORM */}
           {showForm && (
             <div
               ref={reviewRef}
-              className="bg-white p-5 rounded-lg shadow mt-6"
+              className="bg-white p-5 rounded-2xl shadow mt-6 animate-fadeIn"
             >
-              <h3 className="font-semibold mb-3">Write a Review</h3>
-
               <div className="flex gap-2 mb-3">
-                {[1, 2, 3, 4, 5].map((star) => (
+                {[1,2,3,4,5].map((star)=>(
                   <span
                     key={star}
-                    onClick={() => setNewReview({ ...newReview, rating: star })}
-                    className={`cursor-pointer text-2xl transition ${
+                    onClick={()=>setNewReview({...newReview, rating: star})}
+                    className={`cursor-pointer text-2xl ${
                       star <= newReview.rating
                         ? "text-yellow-400"
                         : "text-gray-300"
@@ -217,67 +205,42 @@ function ProductPage() {
 
               <textarea
                 placeholder="Write your review..."
-                className="w-full border px-3 py-2 rounded mb-3"
+                className="w-full border px-3 py-2 rounded-lg mb-3"
                 rows={3}
                 value={newReview.comment}
-                onChange={(e) =>
-                  setNewReview({ ...newReview, comment: e.target.value })
-                }
+                onChange={(e)=>setNewReview({...newReview, comment:e.target.value})}
               />
 
               <button
                 onClick={handleSubmitReview}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                className="bg-[#c07c52] text-white px-4 py-2 rounded-full"
               >
                 Submit Review
               </button>
             </div>
           )}
 
-          <div className="mt-6 space-y-4">
-            {displayedReviews?.map((r, i) => (
-              <div key={i} className="bg-white p-4 rounded-lg shadow-sm">
-                <h3 className="font-semibold">{r.name}</h3>
-
-                <p className="text-yellow-500">⭐ {r.rating}</p>
-
+          {/* REVIEWS LIST */}
+          <div className="mt-6 grid md:grid-cols-2 gap-4">
+            {(showAllReviews ? reviews : reviews.slice(0,5)).map((r,i)=>(
+              <div key={i} className="bg-white p-4 rounded-xl shadow-sm">
+                <p className="font-medium">{r.name || "User"}</p>
+                <p className="text-yellow-500 text-sm">⭐ {r.rating}</p>
                 <p className="text-gray-600 text-sm">{r.comment}</p>
               </div>
             ))}
           </div>
 
-          {/* SHOW ALL BUTTON */}
-          {product?.reviewsData?.length > 5 && (
+          {reviews.length > 5 && (
             <button
-              onClick={() => setShowAllReviews(!showAllReviews)}
-              className="mt-4 text-blue-600"
+              onClick={()=>setShowAllReviews(!showAllReviews)}
+              className="mt-4 text-[#c07c52]"
             >
               {showAllReviews ? "Show Less" : "Show All Reviews"}
             </button>
           )}
         </div>
 
-        {/* 🔥 RELATED PRODUCTS */}
-        <div className="mt-12">
-          <h2 className="text-xl font-semibold mb-6">Related Products</h2>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {related.map((item) => (
-              <Link to={`/product/${item._id}`}>
-                <div className="bg-white p-3 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer">
-                  <img
-                    src={item.image}
-                    className="w-full h-40 object-cover rounded"
-                  />
-
-                  <h3 className="mt-2 font-medium">{item.name}</h3>
-
-                  <p className="text-gray-600 text-sm">${item.price}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );

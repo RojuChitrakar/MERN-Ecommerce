@@ -1,4 +1,4 @@
-import { ShoppingCart, Trash2 } from "lucide-react";
+import { ShoppingCart, X } from "lucide-react";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 
@@ -6,69 +6,67 @@ function WishlistCard({ product }) {
   const { toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
 
-  // 🔥 MOVE TO CART FUNCTION
   const handleMoveToCart = () => {
-    addToCart(product, 1);        // add to cart
-    toggleWishlist(product);   // remove from wishlist
+    addToCart(product, 1);
+    toggleWishlist(product);
   };
 
+  const isOutOfStock = product.countInStock === 0;
+
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition overflow-hidden">
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition group">
 
       {/* IMAGE */}
-      <img
-        src={product.image}
-        alt={product.name}
-        className="w-full h-56 object-cover"
-      />
+      <div className="relative">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-full h-56 object-cover group-hover:scale-105 transition duration-500"
+        />
+
+        {/* REMOVE BUTTON (TOP RIGHT) */}
+        <button
+          onClick={() => toggleWishlist(product)}
+          className="absolute top-3 right-3 bg-white/90 backdrop-blur p-1.5 rounded-full shadow hover:scale-110 transition"
+        >
+          <X size={14} />
+        </button>
+
+        {/* OUT OF STOCK BADGE */}
+        {isOutOfStock && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="bg-white px-3 py-1 rounded-full text-xs shadow">
+              Out of Stock
+            </span>
+          </div>
+        )}
+      </div>
 
       {/* DETAILS */}
-      <div className="p-4">
+      <div className="p-4 space-y-2">
 
-        <p className="text-sm text-gray-500 capitalize">
-          {product.category}
-        </p>
-
-        <h3 className="font-semibold text-lg">
+        <h3 className="text-sm font-medium text-gray-800">
           {product.name}
         </h3>
 
-        <p className="text-yellow-500 text-sm mt-1">
-          ⭐ {product.rating} ({product.reviews})
+        <p className="text-sm text-gray-600">
+          ₹{product.price}
         </p>
 
-        <div className="flex justify-between items-center mt-3">
-          <span className="font-bold text-lg">
-            ${product.price}
-          </span>
-
-          <span className="text-green-600 text-sm">
-            In Stock
-          </span>
-        </div>
-
-        {/* BUTTONS */}
-        <div className="flex items-center gap-3 mt-4">
-
-          {/* 🔵 ADD TO CART */}
+        {/* BUTTON */}
+        {isOutOfStock ? (
+          <button className="w-full bg-gray-200 text-gray-500 py-2 rounded-full text-sm">
+            Notify When Available
+          </button>
+        ) : (
           <button
             onClick={handleMoveToCart}
-            className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+            className="w-full flex items-center justify-center gap-2 bg-[#c07c52] text-white py-2 rounded-full text-sm hover:scale-105 transition"
           >
-            <ShoppingCart size={16} />
-            Add
+            <ShoppingCart size={14} />
+            Add to Cart
           </button>
-
-          {/* 🔴 REMOVE */}
-          <button
-            onClick={() => toggleWishlist(product)}
-            className="p-2 border rounded-lg hover:bg-red-50 transition"
-          >
-            <Trash2 className="text-red-500" size={18} />
-          </button>
-
-        </div>
-
+        )}
       </div>
     </div>
   );

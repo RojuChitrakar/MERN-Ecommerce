@@ -56,29 +56,34 @@ function Register() {
 
       navigate("/");
     } catch (error) {
-      console.log("ERROR:", error.message);
-      
       alert(error.response?.data?.message || "Registration failed");
     }
   };
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-xl shadow w-full max-w-md">
-        {/* TITLE */}
-        <h2 className="text-2xl font-bold text-center mb-2">Create Account</h2>
 
-        <p className="text-gray-500 text-center mb-6">
-          Sign up to start shopping
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#fdf8f6] px-4">
+
+      {/* CARD */}
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm p-8 animate-fadeIn">
+
+        {/* TITLE */}
+        <h2 className="text-3xl font-semibold text-gray-800 text-center mb-2">
+          Create Account
+        </h2>
+
+        <p className="text-gray-500 text-center mb-6 text-sm">
+          Join and start your handmade journey
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+
           {/* NAME */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center border rounded-lg px-3 py-2">
+            <div className="flex items-center border border-gray-200 rounded-full px-4 py-2 focus-within:border-[#c07c52] transition">
               <User size={16} className="text-gray-400 mr-2" />
               <input
-                placeholder="John"
-                className="w-full outline-none"
+                placeholder="First name"
+                className="w-full outline-none text-sm"
                 value={form.firstName}
                 onChange={(e) =>
                   setForm({ ...form, firstName: e.target.value })
@@ -87,54 +92,62 @@ function Register() {
             </div>
 
             <input
-              placeholder="Doe"
-              className="border rounded-lg px-3 py-2 outline-none"
+              placeholder="Last name"
+              className="border border-gray-200 rounded-full px-4 py-2 outline-none text-sm focus:border-[#c07c52]"
               value={form.lastName}
-              onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, lastName: e.target.value })
+              }
             />
           </div>
 
           {/* EMAIL */}
-          <div className="flex items-center border rounded-lg px-3 py-2">
+          <div className="flex items-center border border-gray-200 rounded-full px-4 py-2 focus-within:border-[#c07c52] transition">
             <Mail size={16} className="text-gray-400 mr-2" />
             <input
               placeholder="you@example.com"
-              className="w-full outline-none"
+              className="w-full outline-none text-sm"
               value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, email: e.target.value })
+              }
             />
           </div>
 
           {/* PHONE */}
-          <div className="flex items-center border rounded-lg px-3 py-2">
+          <div className="flex items-center border border-gray-200 rounded-full px-4 py-2 focus-within:border-[#c07c52] transition">
             <Phone size={16} className="text-gray-400 mr-2" />
             <input
-              placeholder="+1 (555) 123-4567"
-              className="w-full outline-none"
+              placeholder="+91 9876543210"
+              className="w-full outline-none text-sm"
               value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, phone: e.target.value })
+              }
             />
           </div>
 
           {/* PASSWORD */}
-          <div className="flex items-center border rounded-lg px-3 py-2">
+          <div className="flex items-center border border-gray-200 rounded-full px-4 py-2 focus-within:border-[#c07c52] transition">
             <Lock size={16} className="text-gray-400 mr-2" />
             <input
               type="password"
-              placeholder="••••••••"
-              className="w-full outline-none"
+              placeholder="Password"
+              className="w-full outline-none text-sm"
               value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, password: e.target.value })
+              }
             />
           </div>
 
           {/* CONFIRM PASSWORD */}
-          <div className="flex items-center border rounded-lg px-3 py-2">
+          <div className="flex items-center border border-gray-200 rounded-full px-4 py-2 focus-within:border-[#c07c52] transition">
             <Lock size={16} className="text-gray-400 mr-2" />
             <input
               type="password"
               placeholder="Confirm password"
-              className="w-full outline-none"
+              className="w-full outline-none text-sm"
               value={form.confirmPassword}
               onChange={(e) =>
                 setForm({ ...form, confirmPassword: e.target.value })
@@ -151,16 +164,19 @@ function Register() {
               !form.password ||
               !form.confirmPassword
             }
-            className="w-full bg-blue-600 text-white py-3 rounded-lg disabled:bg-gray-300"
+            className="w-full bg-[#c07c52] text-white py-3 rounded-full hover:scale-[1.02] transition disabled:bg-gray-300"
           >
             Create Account
           </button>
         </form>
 
         {/* LINK */}
-        <p className="text-sm text-center mt-6">
+        <p className="text-sm text-center mt-6 text-gray-600">
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-600">
+          <Link
+            to="/login"
+            className="text-[#c07c52] font-medium"
+          >
             Sign in
           </Link>
         </p>

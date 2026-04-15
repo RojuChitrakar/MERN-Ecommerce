@@ -51,7 +51,7 @@ function Home() {
         {/* RIGHT IMAGE */}
         <div className="rounded-3xl overflow-hidden shadow-lg animate-slideIn">
           <img
-            src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800"
+            src="/Image1.jpg"
             className="w-full h-[400px] object-cover"
           />
         </div>
@@ -76,42 +76,42 @@ function Home() {
             {
               name: "Keyrings",
               slug: "keyrings",
-              image: "https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=400",
+              image: "/categories/keyrings.jpg",
             },
             {
               name: "Planters",
               slug: "planter",
-              image: "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?w=400",
+              image: "/categories/planter.jpg",
             },
             {
               name: "Jewellery Holder",
               slug: "jewellery holder",
-              image: "https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=400",
+              image: "/categories/jewellery.jpg",
             },
             {
               name: "Incense Holder",
               slug: "incense holder",
-              image: "https://images.unsplash.com/photo-1603201667141-7f7b6c9b9b02?w=400",
+              image: "/categories/incense.jpg",
             },
             {
               name: "Candle Holder",
               slug: "candle holder",
-              image: "https://images.unsplash.com/photo-1602874801006-e26b8d8b6a5c?w=400",
+              image: "/categories/candle.jpg",
             },
             {
               name: "Table Decor",
               slug: "table decor",
-              image: "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=400",
+              image: "/categories/table.jpg",
             },
             {
               name: "Fridge Magnets",
               slug: "fridge magnets",
-              image: "https://images.unsplash.com/photo-1587614382346-4ec70e388b28?w=400",
+              image: "/categories/magnets.jpg",
             },
             {
               name: "Brush Holder",
               slug: "brush holder",
-              image: "https://images.unsplash.com/photo-1585386959984-a41552231658?w=400",
+              image: "/categories/brushholder.jpg",
             },
           ].map((cat) => (
             <div
@@ -142,7 +142,7 @@ function Home() {
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 items-center px-6">
           
           <img
-            src="https://images.unsplash.com/photo-1590080877777-95b78c3c3c9f?w=600"
+            src="/image2.jpg"
             className="rounded-2xl shadow"
           />
 

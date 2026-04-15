@@ -11,8 +11,7 @@ function AdminDashboard() {
 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  // 🔐 PROTECT ROUTE
+  const [searchProduct, setSearchProduct] = useState("");
   useEffect(() => {
     if (user === null) return;
     if (!user || !user.isAdmin) navigate("/");
@@ -20,124 +19,129 @@ function AdminDashboard() {
 
   if (!user) return null;
 
-  // 📊 FETCH STATS
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const { data } = await axios.get("/orders/full-stats");
         setStats(data);
       } catch (error) {
-        console.error("Stats error:", error.message);
+        console.error(error);
       }
     };
 
     if (user?.isAdmin) fetchStats();
   }, [user]);
 
+  const filteredProducts = stats?.productStats?.filter((p) =>
+    p.name.toLowerCase().includes(searchProduct.toLowerCase()),
+  );
+
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-[#f8f4f1]">
+      {/* 🔥 SIDEBAR */}
+      <aside className="fixed left-0 top-0 h-screen w-64 bg-[#fbf7f4] border-r p-6 flex flex-col z-50">
+        <h2 className="text-xl font-serif text-gray-800 mb-8">
+          ClayCove Admin
+        </h2>
 
-      {/* SIDEBAR */}
-      <aside className="w-64 bg-white border-r flex flex-col">
-        <div className="p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-800">
-            Admin Dashboard
-          </h2>
-        </div>
-
-        <nav className="flex flex-col p-4 gap-2 text-sm">
+        <nav className="flex flex-col gap-3 text-sm">
           {["dashboard", "products", "orders"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`text-left px-4 py-2 rounded-lg transition ${
+              className={`text-left px-4 py-2 rounded-full transition ${
                 activeTab === tab
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-700 hover:bg-gray-100"
+                  ? "bg-[#c07c52] text-white"
+                  : "text-gray-700 hover:bg-[#efe7e2]"
               }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
         </nav>
+
+        {/* LOGOUT */}
+        <button
+          onClick={() => {
+            logout();
+            navigate("/");
+          }}
+          className="mt-auto bg-[#c07c52] text-white py-2 rounded-full"
+        >
+          Logout
+        </button>
       </aside>
 
-      {/* MAIN */}
-      <main className="flex-1 p-6">
-
-        {/* TOP BAR */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold capitalize">
+      {/* 🔥 MAIN */}
+      <main className="flex-1 p-8 ml-64">
+        {/* HEADER */}
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-serif capitalize text-gray-800">
             {activeTab}
           </h1>
 
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-600">
-              {user?.fullName || user?.name}
-            </div>
-
-            <button
-              onClick={() => {
-                logout();
-                navigate("/");
-              }}
-              className="border px-4 py-1.5 rounded-lg hover:bg-gray-100"
-            >
-              Logout
-            </button>
-          </div>
+          <p className="text-sm text-gray-600">{user?.fullName}</p>
         </div>
 
         {/* DASHBOARD */}
         {activeTab === "dashboard" && (
           <>
-            {/* STATS CARDS */}
+            {/* 🔥 STATS */}
             <div className="grid md:grid-cols-4 gap-6">
-              <div className="bg-white p-5 rounded-xl shadow-sm border">
+              <div className="bg-[#fbf7f4] p-6 rounded-2xl shadow-sm">
                 <p className="text-sm text-gray-500">Total Orders</p>
-                <h2 className="text-2xl font-semibold mt-1">
+                <h2 className="text-2xl font-semibold mt-2">
                   {stats?.totalOrders || 0}
                 </h2>
               </div>
 
-              <div className="bg-white p-5 rounded-xl shadow-sm border">
+              <div className="bg-[#fbf7f4] p-6 rounded-2xl shadow-sm">
                 <p className="text-sm text-gray-500">Total Products</p>
-                <h2 className="text-2xl font-semibold mt-1">
+                <h2 className="text-2xl font-semibold mt-2">
                   {stats?.totalProducts || 0}
                 </h2>
               </div>
 
-              <div className="bg-white p-5 rounded-xl shadow-sm border">
+              <div className="bg-[#fbf7f4] p-6 rounded-2xl shadow-sm">
                 <p className="text-sm text-gray-500">Total Sold</p>
-                <h2 className="text-2xl font-semibold mt-1 text-blue-600">
+                <h2 className="text-2xl font-semibold mt-2 text-[#c07c52]">
                   {stats?.totalSold || 0}
                 </h2>
               </div>
 
-              <div className="bg-white p-5 rounded-xl shadow-sm border">
+              <div className="bg-[#fbf7f4] p-6 rounded-2xl shadow-sm">
                 <p className="text-sm text-gray-500">Stock Remaining</p>
-                <h2 className="text-2xl font-semibold mt-1">
+                <h2 className="text-2xl font-semibold mt-2">
                   {stats?.productStats
                     ? stats.productStats.reduce(
                         (acc, p) => acc + p.remaining,
-                        0
+                        0,
                       )
                     : 0}
                 </h2>
               </div>
             </div>
 
-            {/* PRODUCT ANALYTICS TABLE */}
-            <div className="bg-white mt-6 rounded-xl shadow-sm border">
-              <div className="p-4 border-b">
-                <h2 className="text-lg font-medium">
+            {/* 🔥 PRODUCT ANALYTICS */}
+            <div className="bg-[#fbf7f4] mt-8 rounded-2xl shadow-sm">
+              <div className="p-4 border-b flex justify-between items-center">
+                <h2 className="text-lg font-serif text-gray-800">
                   Product Analytics
                 </h2>
+
+                {/* 🔍 SEARCH */}
+                <input
+                  type="text"
+                  placeholder="Search product..."
+                  value={searchProduct}
+                  onChange={(e) => setSearchProduct(e.target.value)}
+                  className="border px-3 py-2 rounded-full text-sm w-60 focus:outline-none focus:ring-1 focus:ring-[#c07c52]"
+                />
               </div>
 
               <div className="max-h-[300px] overflow-y-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 text-gray-600">
+                  <thead className="bg-[#efe7e2]">
                     <tr>
                       <th className="p-3 text-left">Product</th>
                       <th className="p-3 text-left">Stock</th>
@@ -147,16 +151,14 @@ function AdminDashboard() {
                   </thead>
 
                   <tbody>
-                    {stats?.productStats?.map((p, i) => (
+                    {filteredProducts?.map((p, i) => (
                       <tr key={i} className="border-t">
                         <td className="p-3">{p.name}</td>
                         <td className="p-3">{p.stock}</td>
-                        <td className="p-3 text-blue-600">{p.sold}</td>
+                        <td className="p-3 text-[#c07c52]">{p.sold}</td>
                         <td
                           className={`p-3 ${
-                            p.remaining < 5
-                              ? "text-red-500 font-medium"
-                              : ""
+                            p.remaining < 5 ? "text-red-500 font-medium" : ""
                           }`}
                         >
                           {p.remaining}
@@ -168,10 +170,10 @@ function AdminDashboard() {
               </div>
             </div>
 
-            {/* CATEGORY STATS */}
-            <div className="bg-white mt-6 rounded-xl shadow-sm border">
+            {/* 🔥 CATEGORY STATS */}
+            <div className="bg-[#fbf7f4] mt-8 rounded-2xl shadow-sm">
               <div className="p-4 border-b">
-                <h2 className="text-lg font-medium">
+                <h2 className="text-lg font-serif text-gray-800">
                   Category Distribution
                 </h2>
               </div>
@@ -179,16 +181,11 @@ function AdminDashboard() {
               <div className="p-4 space-y-3">
                 {Object.entries(stats?.categoryStats || {}).map(
                   ([cat, count]) => (
-                    <div
-                      key={cat}
-                      className="flex justify-between text-sm"
-                    >
-                      <span className="text-gray-700">{cat}</span>
-                      <span className="font-medium">
-                        {count}
-                      </span>
+                    <div key={cat} className="flex justify-between text-sm">
+                      <span className="capitalize">{cat}</span>
+                      <span className="font-medium">{count}</span>
                     </div>
-                  )
+                  ),
                 )}
               </div>
             </div>

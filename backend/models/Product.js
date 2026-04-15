@@ -9,44 +9,70 @@ const reviewSchema = new mongoose.Schema(
     name: String,
     rating: Number,
     comment: String,
+
+    // 🔥 NEW: multiple images
+    images: [
+      {
+        type: String,
+      },
+    ],
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const productSchema = new mongoose.Schema(
   {
-    name: String,
-    price: Number,
-    image: String,
-    category: String,
-    description: String,
-    rating: {
+    name: {
       type: String,
-      default: 0,
+      required: true,
     },
-    reviews: {
+
+    price: {
       type: Number,
+      required: true,
+    },
+
+    // 🔥 MULTIPLE IMAGES
+    images: [
+      {
+        type: String,
+      },
+    ],
+
+    category: {
+      type: String,
+      required: true,
+    },
+
+    description: String,
+
+    // 🔥 STOCK SYSTEM
+    countInStock: {
+      type: Number,
+      required: true,
       default: 0,
     },
+
     inStock: {
       type: Boolean,
       default: true,
     },
-    reviewsData: [
-      {
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-        name: String,
-        rating: Number,
-        comment: String,
-      },
-    ],
+
+    rating: {
+      type: Number,
+      default: 0,
+    },
+
+    reviews: {
+      type: Number,
+      default: 0,
+    },
+
+    reviewsData: [reviewSchema],
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 const Product = mongoose.model("Product", productSchema);

@@ -112,26 +112,24 @@ export const addProductReview = async (req, res) => {
 ========================= */
 export const createProduct = async (req, res) => {
   try {
-    console.log("FILES:", JSON.stringify(req.files, null, 2));
-console.log("BODY:", req.body);
-
-    // 🔥 SAFELY EXTRACT IMAGE URLS
-    const imageUrls = req.files?.map((file) => file.path || file.secure_url) || [];
+    const imageUrls = req.files.map((file) => file.path);
 
     const product = new Product({
       name: req.body.name,
       price: req.body.price,
-      description: req.body.description,
       category: req.body.category,
+      description: req.body.description,
       countInStock: req.body.countInStock,
+
       images: imageUrls,
+
+      inStock: req.body.countInStock > 0,
     });
 
     const createdProduct = await product.save();
     res.status(201).json(createdProduct);
 
   } catch (error) {
-    console.error("CREATE PRODUCT ERROR:", error);
     res.status(500).json({ message: error.message });
   }
 };

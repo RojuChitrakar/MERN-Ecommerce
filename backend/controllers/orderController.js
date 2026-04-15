@@ -13,14 +13,51 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ message: "No order items" });
     }
 
+    // 🔥 STEP 1: FETCH ALL PRODUCTS ONCE
+    const productIds = cartItems.map(
+      (item) => item.product._id || item.product,
+    );
+
+    const products = await Product.find({ _id: { $in: productIds } });
+
+    // 🔥 STEP 2: VALIDATE STOCK
+    for (const item of cartItems) {
+      const product = products.find(
+        (p) =>
+          p._id.toString() === (item.product._id || item.product).toString(),
+      );
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      if (product.countInStock < item.qty) {
+        return res.status(400).json({
+          message: `${product.name} only has ${product.countInStock} in stock`,
+        });
+      }
+    }
+
+    // 🔥 STEP 3: REDUCE STOCK
+    for (const item of cartItems) {
+      const product = products.find(
+        (p) =>
+          p._id.toString() === (item.product._id || item.product).toString(),
+      );
+
+      product.countInStock -= item.qty;
+      await product.save();
+    }
+
+    // 🔥 STEP 4: CREATE ORDER AFTER VALIDATION
     const order = new Order({
       user: req.user._id,
 
       items: cartItems.map((item) => ({
-        product: item.product._id,
-        name: item.product.name,
-        price: item.product.price,
-        image: item.product.image,
+        product: item.product._id || item.product,
+        name: item.product?.name || item.name,
+        price: item.product?.price || item.price,
+        image: item.product?.images?.[0] || item.image || "",
         qty: item.qty,
       })),
 
@@ -31,9 +68,8 @@ export const createOrder = async (req, res) => {
 
     const createdOrder = await order.save();
 
-    await User.findByIdAndUpdate(req.user._id, {
-      cart: [],
-    });
+    // 🔥 STEP 5: CLEAR CART
+    await User.findByIdAndUpdate(req.user._id, { cart: [] });
 
     res.status(201).json(createdOrder);
   } catch (error) {
@@ -47,9 +83,9 @@ export const createOrder = async (req, res) => {
 ========================= */
 export const getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id }).sort({
-      createdAt: -1,
-    });
+    const orders = await Order.find({ user: req.user._id })
+      .populate("items.product") // 🔥 THIS LINE
+      .sort({ createdAt: -1 });
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -63,6 +99,7 @@ export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
       .populate("user", "fullName email")
+      .populate("items.product") // 🔥 ADD THIS
       .sort({ createdAt: -1 });
 
     console.log("ORDERS:", JSON.stringify(orders, null, 2)); // 🔥 DEBUG
@@ -176,8 +213,10 @@ export const getFullAdminStats = async (req, res) => {
 
     // 🔥 Final stats
     const productStats = Object.values(productMap).map((p) => ({
-      ...p,
-      remaining: p.stock - p.sold,
+      name: p.name,
+      stock: p.stock,
+      sold: p.sold,
+      remaining: p.stock, // ✅ FIXED
     }));
 
     res.json({

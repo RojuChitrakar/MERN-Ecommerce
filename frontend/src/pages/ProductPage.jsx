@@ -5,6 +5,8 @@ import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { Heart, ShoppingCart } from "lucide-react";
 import { fetchProductById, addReview } from "../api/productApi";
+import { fetchProducts } from "../api/productApi";
+import ProductCard from "../components/ProductCard";
 
 function ProductPage() {
   const { id } = useParams();
@@ -24,6 +26,24 @@ function ProductPage() {
     comment: "",
   });
 
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [activeImage, setActiveImage] = useState(0);
+  useEffect(() => {
+    const loadRelated = async () => {
+      if (!product) return;
+
+      const data = await fetchProducts();
+
+      const filtered = data
+        .filter((p) => p.category === product.category && p._id !== product._id)
+        .slice(0, 8); // 🔥 2 rows (4x2)
+
+      setRelatedProducts(filtered);
+    };
+
+    loadRelated();
+  }, [product]);
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]);
@@ -31,9 +51,13 @@ function ProductPage() {
   useEffect(() => {
     const loadProduct = async () => {
       const data = await fetchProductById(id);
+
       setProduct(data);
       setReviews(data.reviewsData || []);
+
+      setActiveImage(0); // ✅ correct place
     };
+
     loadProduct();
   }, [id]);
 
@@ -53,9 +77,9 @@ function ProductPage() {
 
   const averageRating =
     totalReviews > 0
-      ? (
-          reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews
-        ).toFixed(1)
+      ? (reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(
+          1,
+        )
       : 0;
 
   const liked = isInWishlist(product._id);
@@ -65,21 +89,42 @@ function ProductPage() {
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-6 py-12">
-
         {/* TOP SECTION */}
         <div className="grid md:grid-cols-2 gap-12 items-center">
-
           {/* IMAGE */}
           <div className="overflow-hidden rounded-3xl shadow">
-            <img
-              src={product.image}
-              className="w-full h-[450px] object-cover hover:scale-105 transition duration-500"
-            />
+            <div className="space-y-4">
+              {/* 🔥 MAIN IMAGE */}
+              <div className="overflow-hidden rounded-3xl shadow">
+                <img
+                  src={
+                    product.images?.[activeImage] ||
+                    "https://via.placeholder.com/500"
+                  }
+                  className="w-full h-[450px] object-cover transition duration-500"
+                />
+              </div>
+
+              {/* 🔥 THUMBNAILS (SCROLLABLE) */}
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {product.images?.map((img, index) => (
+                  <img
+                    key={index}
+                    src={img}
+                    onClick={() => setActiveImage(index)}
+                    className={`w-20 h-20 object-cover rounded-xl cursor-pointer border-2 transition ${
+                      activeImage === index
+                        ? "border-[#c07c52]"
+                        : "border-transparent"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* DETAILS */}
           <div className="space-y-4">
-
             <p className="text-sm text-gray-400 uppercase">
               {product.category}
             </p>
@@ -93,21 +138,25 @@ function ProductPage() {
             </p>
 
             <p className="text-3xl font-semibold text-gray-800">
-              ₹{product.price}
+              Rs {product.price}
             </p>
 
-            <p className="text-gray-600 text-sm">
-              {product.description}
-            </p>
+            <p className="text-gray-600 text-sm">{product.description}</p>
 
             {/* STOCK */}
-            <span className="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
-              In Stock
-            </span>
+            {/* STOCK STATUS */}
+            {product.countInStock === 0 ? (
+              <span className="inline-block px-3 py-1 bg-red-100 text-red-600 rounded-full text-sm">
+                Out of Stock
+              </span>
+            ) : (
+              <span className="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                In Stock ({product.countInStock} left)
+              </span>
+            )}
 
             {/* ACTIONS */}
             <div className="flex items-center gap-4 pt-4">
-
               {/* QTY */}
               <div className="flex items-center border rounded-full overflow-hidden">
                 <button
@@ -120,7 +169,11 @@ function ProductPage() {
                 <span className="px-4">{qty}</span>
 
                 <button
-                  onClick={() => setQty(qty + 1)}
+                  onClick={() => {
+                    if (qty < product.countInStock) {
+                      setQty(qty + 1);
+                    }
+                  }}
                   className="px-4 py-2 hover:bg-gray-100"
                 >
                   +
@@ -129,11 +182,16 @@ function ProductPage() {
 
               {/* ADD TO CART */}
               <button
+                disabled={product.countInStock === 0}
                 onClick={() => addToCart(product, qty)}
-                className="flex items-center gap-2 bg-[#c07c52] text-white px-6 py-3 rounded-full hover:scale-105 transition"
+                className={`flex items-center gap-2 px-6 py-3 rounded-full transition ${
+                  product.countInStock === 0
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-[#c07c52] text-white hover:scale-105"
+                }`}
               >
                 <ShoppingCart size={18} />
-                Add to Cart
+                {product.countInStock === 0 ? "Out of Stock" : "Add to Cart"}
               </button>
 
               {/* WISHLIST */}
@@ -142,9 +200,7 @@ function ProductPage() {
                 className="p-3 border rounded-full hover:bg-gray-100 transition"
               >
                 <Heart
-                  className={
-                    liked ? "text-[#c07c52] fill-[#c07c52]" : ""
-                  }
+                  className={liked ? "text-[#c07c52] fill-[#c07c52]" : ""}
                 />
               </button>
             </div>
@@ -160,7 +216,6 @@ function ProductPage() {
 
         {/* REVIEWS */}
         <div className="mt-16">
-
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold text-gray-800">
               Customer Reviews
@@ -188,10 +243,10 @@ function ProductPage() {
               className="bg-white p-5 rounded-2xl shadow mt-6 animate-fadeIn"
             >
               <div className="flex gap-2 mb-3">
-                {[1,2,3,4,5].map((star)=>(
+                {[1, 2, 3, 4, 5].map((star) => (
                   <span
                     key={star}
-                    onClick={()=>setNewReview({...newReview, rating: star})}
+                    onClick={() => setNewReview({ ...newReview, rating: star })}
                     className={`cursor-pointer text-2xl ${
                       star <= newReview.rating
                         ? "text-yellow-400"
@@ -208,7 +263,9 @@ function ProductPage() {
                 className="w-full border px-3 py-2 rounded-lg mb-3"
                 rows={3}
                 value={newReview.comment}
-                onChange={(e)=>setNewReview({...newReview, comment:e.target.value})}
+                onChange={(e) =>
+                  setNewReview({ ...newReview, comment: e.target.value })
+                }
               />
 
               <button
@@ -222,7 +279,7 @@ function ProductPage() {
 
           {/* REVIEWS LIST */}
           <div className="mt-6 grid md:grid-cols-2 gap-4">
-            {(showAllReviews ? reviews : reviews.slice(0,5)).map((r,i)=>(
+            {(showAllReviews ? reviews : reviews.slice(0, 5)).map((r, i) => (
               <div key={i} className="bg-white p-4 rounded-xl shadow-sm">
                 <p className="font-medium">{r.name || "User"}</p>
                 <p className="text-yellow-500 text-sm">⭐ {r.rating}</p>
@@ -233,7 +290,7 @@ function ProductPage() {
 
           {reviews.length > 5 && (
             <button
-              onClick={()=>setShowAllReviews(!showAllReviews)}
+              onClick={() => setShowAllReviews(!showAllReviews)}
               className="mt-4 text-[#c07c52]"
             >
               {showAllReviews ? "Show Less" : "Show All Reviews"}
@@ -241,6 +298,27 @@ function ProductPage() {
           )}
         </div>
 
+        {/* 🔥 RELATED PRODUCTS */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-20">
+            {/* TITLE */}
+            <div className="text-center mb-10">
+              <h2 className="text-2xl font-serif text-gray-800">
+                You May Also Like
+              </h2>
+              <p className="text-sm text-gray-500">
+                More from the same collection
+              </p>
+            </div>
+
+            {/* GRID */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+              {relatedProducts.map((item) => (
+                <ProductCard key={item._id} product={item} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

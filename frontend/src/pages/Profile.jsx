@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import axios from "../utils/axios.js";
 
 function Profile() {
-  const { user: authUser, logout, setUser } = useAuth();
+  const { user: authUser, logout } = useAuth();
   const navigate = useNavigate();
 
   const [user, setLocalUser] = useState({
@@ -15,7 +15,8 @@ function Profile() {
     email: "",
     phone: "",
   });
-
+  
+  const { setUser } = useAuth();
   const [address, setAddress] = useState({
     fullName: "",
     phone: "",
@@ -25,6 +26,13 @@ function Profile() {
     postalCode: "",
     country: "",
   });
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("userInfo"));
+
+    if (storedUser?.address) {
+      setAddress(storedUser.address);
+    }
+  }, []);
 
   const [editing, setEditing] = useState(false);
   const [isEditingAddress, setIsEditingAddress] = useState(false);
@@ -61,11 +69,22 @@ function Profile() {
         address,
       });
 
-      setUser(data);
+      // ✅ Update local state (IMPORTANT)
+      setLocalUser({
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone,
+      });
+
+      setAddress(data.address || {});
+
+      // ✅ update localStorage
       localStorage.setItem("userInfo", JSON.stringify(data));
+      setUser(data);
       alert("Profile updated!");
     } catch (err) {
       console.error(err);
+      alert("Error saving profile");
     }
   };
 
@@ -168,16 +187,32 @@ function Profile() {
               {!isEditingAddress ? (
                 <div className="flex gap-3 text-gray-700">
                   <MapPin className="text-[#c07c52]" />
-                  <div>
-                    <p>{address.fullName}</p>
-                    <p>{address.phone}</p>
-                    <p>{address.street}</p>
-                    <p>
-                      {address.city}, {address.state}
-                    </p>
-                    <p>
-                      {address.postalCode}, {address.country}
-                    </p>
+
+                  <div className="text-sm">
+                    {address.fullName && <p>{address.fullName}</p>}
+                    {address.phone && <p>{address.phone}</p>}
+                    {address.street && <p>{address.street}</p>}
+
+                    {(address.city || address.state) && (
+                      <p>
+                        {[address.city, address.state]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </p>
+                    )}
+
+                    {(address.postalCode || address.country) && (
+                      <p>
+                        {[address.postalCode, address.country]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </p>
+                    )}
+
+                    {/* 🔥 EMPTY STATE */}
+                    {!address.street && (
+                      <p className="text-gray-400">No address added yet</p>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -190,6 +225,7 @@ function Profile() {
                       setAddress({ ...address, fullName: e.target.value })
                     }
                   />
+
                   <input
                     className="input"
                     placeholder="Phone"
@@ -198,12 +234,49 @@ function Profile() {
                       setAddress({ ...address, phone: e.target.value })
                     }
                   />
+
                   <input
                     className="input"
                     placeholder="Street"
                     value={address.street}
                     onChange={(e) =>
                       setAddress({ ...address, street: e.target.value })
+                    }
+                  />
+
+                  <input
+                    className="input"
+                    placeholder="City"
+                    value={address.city}
+                    onChange={(e) =>
+                      setAddress({ ...address, city: e.target.value })
+                    }
+                  />
+
+                  <input
+                    className="input"
+                    placeholder="State"
+                    value={address.state}
+                    onChange={(e) =>
+                      setAddress({ ...address, state: e.target.value })
+                    }
+                  />
+
+                  <input
+                    className="input"
+                    placeholder="Postal Code"
+                    value={address.postalCode}
+                    onChange={(e) =>
+                      setAddress({ ...address, postalCode: e.target.value })
+                    }
+                  />
+
+                  <input
+                    className="input"
+                    placeholder="Country"
+                    value={address.country}
+                    onChange={(e) =>
+                      setAddress({ ...address, country: e.target.value })
                     }
                   />
                 </div>
@@ -247,9 +320,16 @@ function Profile() {
                         {/* LEFT: IMAGE + NAME */}
                         <div className="flex items-center gap-3">
                           <img
-                            src={item.image}
+                            src={
+                              item.image ||
+                              item.product?.images?.[0] ||
+                              "/no-image.png"
+                            }
                             alt={item.name}
                             className="w-12 h-12 rounded-lg object-cover"
+                            onError={(e) => {
+                              e.target.src = "/no-image.png";
+                            }}
                           />
 
                           <div className="text-sm">

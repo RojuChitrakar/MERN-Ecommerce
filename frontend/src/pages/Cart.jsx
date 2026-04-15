@@ -15,9 +15,13 @@ function Cart() {
     return acc + item.product.price * item.qty;
   }, 0);
 
+  const hasInvalidQty = cart.some(
+    (item) => item.qty > item.product?.countInStock,
+  );
+
   const shipping = 120;
   const total = subtotal + shipping;
-
+  const hasOutOfStock = cart.some((item) => item.product?.countInStock === 0);
   const handleCheckout = () => {
     if (!user) navigate("/login");
     else navigate("/checkout");
@@ -28,10 +32,7 @@ function Cart() {
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-8 py-16 flex-1">
-
-        <h1 className="text-4xl font-serif text-gray-800 mb-14">
-          Your Cart
-        </h1>
+        <h1 className="text-4xl font-serif text-gray-800 mb-14">Your Cart</h1>
 
         {cart.length === 0 ? (
           <div className="flex flex-col items-center py-20">
@@ -40,10 +41,8 @@ function Cart() {
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-12 items-start">
-
             {/* LEFT */}
             <div className="col-span-2 space-y-6">
-
               {cart.map((item, index) => {
                 if (!item.product) return null;
 
@@ -53,9 +52,8 @@ function Cart() {
                     className="w-full bg-[#fbf7f4] rounded-2xl px-6 py-5 flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.04)]"
                   >
                     <div className="flex items-center gap-6">
-
                       <img
-                        src={item.product.image}
+                        src={item.product.images?.[0]}
                         alt={item.product.name}
                         className="w-20 h-20 rounded-xl object-cover"
                       />
@@ -70,13 +68,29 @@ function Cart() {
                           Rs {item.product.price}
                         </p>
 
-                        <div className="flex items-center gap-3 mt-3">
+                        <p className="text-xs text-gray-500">
+                          {item.product?.countInStock} available
+                        </p>
 
+                        {item.product?.countInStock === 0 && (
+                          <p className="text-red-500 text-xs mt-1">
+                            Out of Stock
+                          </p>
+                        )}
+
+                        {item.qty === item.product?.countInStock &&
+                          item.product?.countInStock > 0 && (
+                            <p className="text-orange-500 text-xs mt-1">
+                              Maximum stock reached
+                            </p>
+                          )}
+
+                        <div className="flex items-center gap-3 mt-3">
                           <button
                             onClick={() =>
                               updateQty(
                                 item.product._id,
-                                Math.max(1, item.qty - 1)
+                                Math.max(1, item.qty - 1),
                               )
                             }
                             className="w-9 h-9 rounded-full bg-[#efe7e2]"
@@ -89,10 +103,21 @@ function Cart() {
                           </span>
 
                           <button
-                            onClick={() =>
-                              updateQty(item.product._id, item.qty + 1)
-                            }
-                            className="w-9 h-9 rounded-full bg-[#efe7e2]"
+                            disabled={item.qty >= item.product.countInStock}
+                            onClick={() => {
+                              const stock = item.product?.countInStock || 0;
+
+                              if (item.qty < stock) {
+                                updateQty(item.product._id, item.qty + 1);
+                              } else {
+                                alert(`Only ${stock} items available`);
+                              }
+                            }}
+                            className={`w-9 h-9 rounded-full ${
+                              item.qty >= item.product.countInStock
+                                ? "bg-gray-200 cursor-not-allowed"
+                                : "bg-[#efe7e2]"
+                            }`}
                           >
                             +
                           </button>
@@ -101,9 +126,7 @@ function Cart() {
                     </div>
 
                     <button
-                      onClick={() =>
-                        removeFromCart(item.product._id)
-                      }
+                      onClick={() => removeFromCart(item.product._id)}
                       className="text-gray-400"
                     >
                       <Trash2 size={18} />
@@ -115,13 +138,11 @@ function Cart() {
 
             {/* RIGHT SUMMARY */}
             <div className="w-[340px] bg-[#f3ede8] rounded-2xl p-7 shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
-
               <h2 className="text-xl font-serif text-gray-800 mb-6">
                 Order Summary
               </h2>
 
               <div className="space-y-4 text-sm text-gray-600">
-
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span>Rs {subtotal}</span>
@@ -136,27 +157,27 @@ function Cart() {
 
                 <div className="flex justify-between text-base font-medium text-gray-800">
                   <span>Total</span>
-                  <span className="text-[#c07c52] text-lg">
-                    Rs {total}
-                  </span>
+                  <span className="text-[#c07c52] text-lg">Rs {total}</span>
                 </div>
               </div>
 
               <button
+                disabled={hasOutOfStock || hasInvalidQty}
                 onClick={handleCheckout}
-                className="w-full mt-7 bg-[#c07c52] text-white py-3.5 rounded-full"
+                className="w-full mt-7 bg-[#c07c52] text-white py-3.5 rounded-full disabled:bg-gray-300"
               >
-                Proceed to Checkout
+                {hasOutOfStock || hasInvalidQty
+                  ? "Fix Cart Items"
+                  : "Proceed to Checkout"}
               </button>
 
               <p
-  onClick={() => navigate("/products")}
-  className="text-center text-sm text-gray-500 mt-5 cursor-pointer hover:underline"
->
-  Continue Shopping
-</p>
+                onClick={() => navigate("/products")}
+                className="text-center text-sm text-gray-500 mt-5 cursor-pointer hover:underline"
+              >
+                Continue Shopping
+              </p>
             </div>
-
           </div>
         )}
       </div>

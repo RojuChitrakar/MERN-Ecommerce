@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 function ProductCard({ product }) {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { addToCart } = useCart();
-
+  const isOutOfStock = product.countInStock === 0;
   const liked = isInWishlist(product._id);
 
   const totalReviews = product.reviewsData?.length || 0;
@@ -26,7 +26,7 @@ function ProductCard({ product }) {
         {/* IMAGE */}
         <div className="relative overflow-hidden">
           <img
-            src={product.image}
+            src={product.images?.[0]}
             alt={product.name}
             className="w-full h-56 object-cover transition duration-500 group-hover:scale-105"
           />
@@ -76,7 +76,7 @@ function ProductCard({ product }) {
               Rs {product.price}
             </span>
 
-            <button
+            <button disabled={isOutOfStock}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -85,7 +85,7 @@ function ProductCard({ product }) {
               className="flex items-center gap-1 bg-[#c07c52] text-white px-3 py-1.5 rounded-full text-xs hover:scale-105 transition"
             >
               <ShoppingCart size={14} />
-              Add
+               {isOutOfStock ? "Out of Stock" : "Add to Cart"}
             </button>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -11,7 +12,6 @@ function Checkout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ SHIPPING STATE
   const [shipping, setShipping] = useState({
     firstName: "",
     lastName: "",
@@ -23,29 +23,25 @@ function Checkout() {
     zip: "",
   });
 
-  // ✅ PAYMENT METHOD
   const [paymentMethod, setPaymentMethod] = useState("esewa");
 
-  // ✅ CALCULATIONS
   const subtotal = cart.reduce(
     (acc, item) => acc + item.product.price * item.qty,
     0
   );
+
   const tax = subtotal * 0.1;
   const total = subtotal + tax;
 
-  // 🔐 PROTECT ROUTE
   useEffect(() => {
     if (!user) {
       navigate("/login", { state: { from: location } });
     }
-  }, [user, navigate, location]);
+  }, [user]);
 
-  // 🔥 AUTO-FILL FROM PROFILE
   useEffect(() => {
     if (user?.address) {
-      const fullName = user.address.fullName || "";
-      const nameParts = fullName.split(" ");
+      const nameParts = user.address.fullName?.split(" ") || [];
 
       setShipping({
         firstName: nameParts[0] || "",
@@ -57,27 +53,20 @@ function Checkout() {
         state: user.address.state || "",
         zip: user.address.postalCode || "",
       });
-    } else {
-      setShipping((prev) => ({
-        ...prev,
-        email: user?.email || "",
-      }));
     }
   }, [user]);
 
   if (!user) return null;
 
-  // ✅ HANDLE INPUT
   const handleChange = (e) => {
     setShipping({ ...shipping, [e.target.name]: e.target.value });
   };
 
-  // ✅ PLACE ORDER
   const handlePlaceOrder = async () => {
     const { firstName, lastName, phone, address, city, state, zip } = shipping;
 
     if (!firstName || !lastName || !phone || !address || !city || !state || !zip) {
-      alert("⚠️ Please fill all shipping details before placing order");
+      alert("Please fill all details");
       return;
     }
 
@@ -104,94 +93,73 @@ function Checkout() {
       });
 
     } catch (error) {
-      console.error("ORDER ERROR:", error.response?.data || error.message);
-      alert("Order failed");
+      console.error(error);
     }
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-[#f8f4f1] min-h-screen flex flex-col">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-6 py-10 grid md:grid-cols-3 gap-8">
-        
-        {/* 🔵 LEFT SIDE */}
-        <div className="md:col-span-2 space-y-6">
+      <div className="max-w-7xl mx-auto px-8 py-16 grid md:grid-cols-3 gap-10 flex-1">
+
+        {/* LEFT SIDE */}
+        <div className="md:col-span-2 space-y-8">
 
           {/* SHIPPING */}
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h2 className="text-xl font-semibold mb-4">Shipping Information</h2>
+          <div className="bg-[#fbf7f4] p-6 rounded-2xl shadow-sm">
+            <h2 className="text-xl font-serif mb-6 text-gray-800">
+              Shipping Information
+            </h2>
 
             <div className="grid grid-cols-2 gap-4">
 
-              <input
-                name="firstName"
-                placeholder="First Name"
-                value={shipping.firstName || ""}
+              <input name="firstName" placeholder="First Name"
+                value={shipping.firstName}
                 onChange={handleChange}
-                className="border p-2 rounded"
-              />
+                className="input" />
 
-              <input
-                name="lastName"
-                placeholder="Last Name"
-                value={shipping.lastName || ""}
+              <input name="lastName" placeholder="Last Name"
+                value={shipping.lastName}
                 onChange={handleChange}
-                className="border p-2 rounded"
-              />
+                className="input" />
 
-              <input
-                name="email"
-                value={shipping.email}
+              <input name="email" value={shipping.email}
                 readOnly
-                className="border p-2 rounded col-span-2 bg-gray-100"
-              />
+                className="input col-span-2 bg-[#efe7e2]" />
 
-              <input
-                name="phone"
-                placeholder="Phone"
-                value={shipping.phone || ""}
+              <input name="phone" placeholder="Phone"
+                value={shipping.phone}
                 onChange={handleChange}
-                className="border p-2 rounded col-span-2"
-              />
+                className="input col-span-2" />
 
-              <input
-                name="address"
-                placeholder="Address"
-                value={shipping.address || ""}
+              <input name="address" placeholder="Address"
+                value={shipping.address}
                 onChange={handleChange}
-                className="border p-2 rounded col-span-2"
-              />
+                className="input col-span-2" />
 
-              <input
-                name="city"
-                placeholder="City"
-                value={shipping.city || ""}
+              <input name="city" placeholder="City"
+                value={shipping.city}
                 onChange={handleChange}
-                className="border p-2 rounded"
-              />
+                className="input" />
 
-              <input
-                name="state"
-                placeholder="State"
-                value={shipping.state || ""}
+              <input name="state" placeholder="State"
+                value={shipping.state}
                 onChange={handleChange}
-                className="border p-2 rounded"
-              />
+                className="input" />
 
-              <input
-                name="zip"
-                placeholder="ZIP Code"
-                value={shipping.zip || ""}
+              <input name="zip" placeholder="Postal Code"
+                value={shipping.zip}
                 onChange={handleChange}
-                className="border p-2 rounded col-span-2"
-              />
+                className="input col-span-2" />
             </div>
           </div>
 
           {/* PAYMENT */}
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
+          <div className="bg-[#fbf7f4] p-6 rounded-2xl shadow-sm">
+            <h2 className="text-xl font-serif mb-6 text-gray-800">
+              Payment Method
+            </h2>
 
             <div className="space-y-3">
               {[
@@ -202,74 +170,90 @@ function Checkout() {
               ].map((method) => (
                 <label
                   key={method.value}
-                  className={`flex items-center gap-3 border p-3 rounded-lg cursor-pointer ${
+                  className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer ${
                     paymentMethod === method.value
-                      ? "border-blue-600 bg-blue-50"
-                      : "hover:bg-gray-50"
+                      ? "bg-[#efe7e2] border border-[#c07c52]"
+                      : "bg-white"
                   }`}
                 >
                   <input
                     type="radio"
-                    name="payment"
                     value={method.value}
                     checked={paymentMethod === method.value}
                     onChange={(e) => setPaymentMethod(e.target.value)}
                   />
-                  <span>{method.label}</span>
+                  {method.label}
                 </label>
               ))}
             </div>
           </div>
         </div>
 
-        {/* 🔵 RIGHT SIDE */}
-        <div className="bg-white p-6 rounded-xl shadow h-fit sticky top-24">
-          <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+        {/* RIGHT SIDE */}
+        <div className="bg-[#f3ede8] p-6 rounded-2xl shadow-sm h-fit sticky top-24">
+
+          <h2 className="text-xl font-serif mb-6 text-gray-800">
+            Order Summary
+          </h2>
 
           {cart.map((item) => (
-            <div key={item.product._id} className="flex justify-between mb-3">
-              <div>
-                <p className="font-medium">{item.product.name}</p>
-                <p className="text-sm text-gray-500">Qty: {item.qty}</p>
+            <div key={item.product._id} className="flex justify-between mb-4">
+
+              <div className="flex gap-3">
+                <img
+                  src={item.product.images?.[0] || "/placeholder.png"}
+                  className="w-12 h-12 rounded-lg object-cover"
+                />
+
+                <div>
+                  <p className="text-sm font-medium">
+                    {item.product.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Qty: {item.qty}
+                  </p>
+                </div>
               </div>
-              <span>₹{(item.product.price * item.qty).toFixed(2)}</span>
+
+              <span className="text-sm">
+                Rs {(item.product.price * item.qty).toFixed(2)}
+              </span>
             </div>
           ))}
 
           <hr className="my-4" />
 
-          <div className="space-y-2 text-gray-600">
-            <div className="flex justify-between">
-              <span>Subtotal</span>
-              <span>₹{subtotal.toFixed(2)}</span>
-            </div>
+          <div className="space-y-2 text-gray-600 text-sm">
 
             <div className="flex justify-between">
-              <span>Shipping</span>
-              <span className="text-green-600">FREE</span>
+              <span>Subtotal</span>
+              <span>Rs {subtotal.toFixed(2)}</span>
             </div>
 
             <div className="flex justify-between">
               <span>Tax (10%)</span>
-              <span>₹{tax.toFixed(2)}</span>
+              <span>Rs {tax.toFixed(2)}</span>
             </div>
 
             <hr />
 
-            <div className="flex justify-between font-bold text-lg">
+            <div className="flex justify-between text-lg font-semibold text-[#c07c52]">
               <span>Total</span>
-              <span>₹{total.toFixed(2)}</span>
+              <span>Rs {total.toFixed(2)}</span>
             </div>
           </div>
 
           <button
             onClick={handlePlaceOrder}
-            className="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700"
+            className="mt-6 w-full bg-[#c07c52] text-white py-3 rounded-full hover:opacity-90 transition"
           >
             Place Order
           </button>
         </div>
+
       </div>
+
+      <Footer />
     </div>
   );
 }

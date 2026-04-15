@@ -9,13 +9,29 @@ export const CartProvider = ({ children }) => {
 
   // ✅ FETCH CART FROM BACKEND
   const fetchCart = async () => {
-    try {
-      const { data } = await axios.get("/api/users/cart");
-      setCart(data);
-    } catch (error) {
-      console.error("Fetch cart error:", error);
-    }
-  };
+  try {
+    const { data } = await axios.get("/api/users/cart");
+
+    // 🔥 FIX STOCK MISMATCH
+    const fixedCart = data.map((item) => {
+      const stock = item.product?.countInStock || 0;
+
+      if (item.qty > stock) {
+        return {
+          ...item,
+          qty: stock,
+        };
+      }
+
+      return item;
+    });
+
+    setCart(fixedCart);
+
+  } catch (error) {
+    console.error("Fetch cart error:", error);
+  }
+};
 
   // ✅ ADD TO CART
   const addToCart = async (product, qty = 1) => {
@@ -28,6 +44,8 @@ export const CartProvider = ({ children }) => {
       setCart(data);
     } catch (error) {
       console.error("Add to cart error:", error);
+
+      alert(error.response?.data?.message || "Failed to add item to cart");
     }
   };
 
@@ -47,12 +65,16 @@ export const CartProvider = ({ children }) => {
       const { data } = await axios.put(`/api/users/cart/${id}`, { qty });
       setCart(data);
     } catch (error) {
-      console.error("Update qty error:", error);
-    }
+  console.error("Update qty error:", error);
+
+  alert(
+    error.response?.data?.message || "Cannot update quantity"
+  );
+}
   };
   const clearCart = () => {
-  setCart([]);
-};
+    setCart([]);
+  };
 
   // ✅ LOAD CART ON APP START
   const { user } = useAuth();
@@ -62,10 +84,17 @@ export const CartProvider = ({ children }) => {
       fetchCart();
     }
   }, [user]);
-  
+
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateQty, fetchCart , clearCart}}
+      value={{
+        cart,
+        addToCart,
+        removeFromCart,
+        updateQty,
+        fetchCart,
+        clearCart,
+      }}
     >
       {children}
     </CartContext.Provider>

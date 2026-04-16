@@ -168,6 +168,81 @@ function Navbar() {
           <Menu />
         </button>
       </div>
+      {menuOpen && (
+  <>
+    {/* BACKDROP */}
+    <div
+      className="fixed inset-0 bg-black/30 z-40"
+      onClick={() => setMenuOpen(false)}
+    />
+
+    {/* SIDE MENU */}
+    <div className="fixed top-0 left-0 h-full w-72 bg-white z-50 p-6 shadow-lg transform transition-transform duration-300">
+      
+      {/* CLOSE BUTTON */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-lg font-semibold">Menu</h2>
+        <button onClick={() => setMenuOpen(false)}>
+          <X size={24} />
+        </button>
+      </div>
+
+      {/* LINKS */}
+      <div className="flex flex-col gap-5 text-base">
+
+        <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
+
+        <Link to="/products" onClick={() => setMenuOpen(false)}>Shop</Link>
+
+        {/* CATEGORIES DROPDOWN */}
+        <div>
+          <button
+            onClick={() => setCategoryOpen(!categoryOpen)}
+            className="flex justify-between w-full"
+          >
+            Categories <ChevronDown size={16} />
+          </button>
+
+          {categoryOpen && (
+            <div className="ml-3 mt-2 flex flex-col gap-2">
+              {categories.map((cat) => (
+                <Link
+                  key={cat}
+                  to={`/products?category=${cat}`}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setCategoryOpen(false);
+                  }}
+                  className="capitalize text-sm"
+                >
+                  {cat}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <Link to="/wishlist" onClick={() => setMenuOpen(false)}>
+          Wishlist
+        </Link>
+
+        <Link to="/cart" onClick={() => setMenuOpen(false)}>
+          Cart
+        </Link>
+
+       {user ? (
+  <Link to="/profile" onClick={() => setMenuOpen(false)}>
+    Account ({user.name})
+  </Link>
+) : (
+  <Link to="/login" onClick={() => setMenuOpen(false)}>
+    Login / Sign Up
+  </Link>
+)}
+      </div>
+    </div>
+  </>
+)}
     </nav>
   );
 }

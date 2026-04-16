@@ -1,10 +1,11 @@
 import axios from "axios";
 
-const instance = axios.create({
-  baseURL: "/https://claycove-backend.onrender.com/api",
+const API = axios.create({
+  baseURL: import.meta.env.VITE_API_URL, // must include /api
+  withCredentials: true
 });
 
-instance.interceptors.request.use((config) => {
+API.interceptors.request.use((config) => {
   const user = JSON.parse(localStorage.getItem("userInfo"));
 
   if (user?.token) {
@@ -14,4 +15,4 @@ instance.interceptors.request.use((config) => {
   return config;
 });
 
-export default instance;
+export default API;

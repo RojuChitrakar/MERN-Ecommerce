@@ -237,7 +237,6 @@ export const CartProvider = ({ children }) => {
     localStorage.removeItem("cart");
   };
 
-  // ✅ LOAD CART ON APP START
   useEffect(() => {
     if (user && !user.isAdmin) {
       fetchCart();

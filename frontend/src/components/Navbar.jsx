@@ -49,18 +49,21 @@ function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-[#fdf8f6] border-b">
       <div className="px-8 py-4 flex items-center justify-between">
-
         {/* LOGO */}
         <Link
           to="/"
-          className="text-2xl font-semibold text-[#d8a48f]"
+          className="flex items-center gap-2 text-2xl font-semibold text-[#d8a48f]"
         >
-          ClayCove
+          {/* <img
+            src="/clay-icon.png"
+            alt="ClayCove"
+            className="w-20 h-20 object-contain"
+          /> */}
+          <span>ClayCove</span>
         </Link>
 
         {/* CENTER */}
         <div className="hidden md:flex items-center gap-6">
-
           <NavLink to="/" className="hover:text-[#d8a48f]">
             Home
           </NavLink>
@@ -109,7 +112,6 @@ function Navbar() {
 
         {/* RIGHT */}
         <div className="hidden md:flex items-center gap-5">
-
           <Link to="/wishlist" className="relative">
             <Heart />
             {wishlist.length > 0 && (

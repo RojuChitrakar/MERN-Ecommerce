@@ -16,7 +16,13 @@ const startServer = async () => {
   const app = express();
 
   app.use(express.json());
-  app.use(cors());
+
+  app.use(
+    cors({
+      origin: "https://claycove-frontend.onrender.com",
+      credentials: true,
+    }),
+  );
 
   app.use("/api/products", productRoutes);
   app.use("/api/auth", authRoutes);

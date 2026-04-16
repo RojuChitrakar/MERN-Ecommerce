@@ -1,27 +1,229 @@
+// import Navbar from "../components/Navbar";
+// import Footer from "../components/Footer";
+// import { useAuth } from "../context/AuthContext";
+// import { useCart } from "../context/CartContext";
+// import { Trash2, ShoppingBag } from "lucide-react";
+// import { Link, useNavigate } from "react-router-dom";
+
+// function Cart() {
+//   const { user } = useAuth();
+//   const navigate = useNavigate();
+//   const { cart, removeFromCart, updateQty } = useCart();
+
+//   const subtotal = cart.reduce((acc, item) => {
+//     if (!item.product) return acc;
+//     return acc + item.product.price * item.qty;
+//   }, 0);
+
+//   const hasInvalidQty = cart.some(
+//     (item) => item.qty > item.product?.countInStock,
+//   );
+
+//   const shipping = 120;
+//   const total = subtotal + shipping;
+//   const hasOutOfStock = cart.some((item) => item.product?.countInStock === 0);
+//   const handleCheckout = () => {
+//     if (!user) navigate("/login");
+//     else navigate("/checkout");
+//   };
+
+//   return (
+//     <div className="bg-[#f8f4f1] min-h-screen flex flex-col">
+//       <Navbar />
+
+//       <div className="max-w-7xl mx-auto px-8 py-16 flex-1">
+//         <h1 className="text-4xl font-serif text-gray-800 mb-14">Your Cart</h1>
+
+//         {cart.length === 0 ? (
+//           <div className="flex flex-col items-center py-20">
+//             <ShoppingBag size={60} className="text-gray-300 mb-4" />
+//             <p className="text-gray-500">Your cart is empty</p>
+//           </div>
+//         ) : (
+//           <div className="grid grid-cols-3 gap-12 items-start">
+//             {/* LEFT */}
+//             <div className="col-span-2 space-y-6">
+//               {cart.map((item, index) => {
+//                 if (!item.product) return null;
+
+//                 return (
+//                   <div
+//                     key={item.product._id || index}
+//                     className="w-full bg-[#fbf7f4] rounded-2xl px-6 py-5 flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.04)]"
+//                   >
+//                     <div className="flex items-center gap-6">
+//                       <img
+//                         src={item.product.images?.[0]}
+//                         alt={item.product.name}
+//                         className="w-20 h-20 rounded-xl object-cover"
+//                       />
+
+//                       <div>
+//                         <p className="text-base font-medium text-gray-800">
+//                           {item.product.name}
+//                         </p>
+
+//                         {/* ✅ NPR FIX */}
+//                         <p className="text-[#c07c52] text-sm mt-1">
+//                           Rs {item.product.price}
+//                         </p>
+
+//                         <p className="text-xs text-gray-500">
+//                           {item.product?.countInStock} available
+//                         </p>
+
+//                         {item.product?.countInStock === 0 && (
+//                           <p className="text-red-500 text-xs mt-1">
+//                             Out of Stock
+//                           </p>
+//                         )}
+
+//                         {item.qty === item.product?.countInStock &&
+//                           item.product?.countInStock > 0 && (
+//                             <p className="text-orange-500 text-xs mt-1">
+//                               Maximum stock reached
+//                             </p>
+//                           )}
+
+//                         <div className="flex items-center gap-3 mt-3">
+//                           <button
+//                             onClick={() =>
+//                               updateQty(
+//                                 item.product._id,
+//                                 Math.max(1, item.qty - 1),
+//                               )
+//                             }
+//                             className="w-9 h-9 rounded-full bg-[#efe7e2]"
+//                           >
+//                             −
+//                           </button>
+
+//                           <span className="text-sm w-4 text-center">
+//                             {item.qty}
+//                           </span>
+
+//                           <button
+//                             disabled={item.qty >= item.product.countInStock}
+//                             onClick={() => {
+//                               const stock = item.product?.countInStock || 0;
+
+//                               if (item.qty < stock) {
+//                                 updateQty(item.product._id, item.qty + 1);
+//                               } else {
+//                                 alert(`Only ${stock} items available`);
+//                               }
+//                             }}
+//                             className={`w-9 h-9 rounded-full ${
+//                               item.qty >= item.product.countInStock
+//                                 ? "bg-gray-200 cursor-not-allowed"
+//                                 : "bg-[#efe7e2]"
+//                             }`}
+//                           >
+//                             +
+//                           </button>
+//                         </div>
+//                       </div>
+//                     </div>
+
+//                     <button
+//                       onClick={() => removeFromCart(item.product._id)}
+//                       className="text-gray-400"
+//                     >
+//                       <Trash2 size={18} />
+//                     </button>
+//                   </div>
+//                 );
+//               })}
+//             </div>
+
+//             {/* RIGHT SUMMARY */}
+//             <div className="w-[340px] bg-[#f3ede8] rounded-2xl p-7 shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
+//               <h2 className="text-xl font-serif text-gray-800 mb-6">
+//                 Order Summary
+//               </h2>
+
+//               <div className="space-y-4 text-sm text-gray-600">
+//                 <div className="flex justify-between">
+//                   <span>Subtotal</span>
+//                   <span>Rs {subtotal}</span>
+//                 </div>
+
+//                 <div className="flex justify-between">
+//                   <span>Shipping</span>
+//                   <span>Rs {shipping}</span>
+//                 </div>
+
+//                 <hr />
+
+//                 <div className="flex justify-between text-base font-medium text-gray-800">
+//                   <span>Total</span>
+//                   <span className="text-[#c07c52] text-lg">Rs {total}</span>
+//                 </div>
+//               </div>
+
+//               <button
+//                 disabled={hasOutOfStock || hasInvalidQty}
+//                 onClick={handleCheckout}
+//                 className="w-full mt-7 bg-[#c07c52] text-white py-3.5 rounded-full disabled:bg-gray-300"
+//               >
+//                 {hasOutOfStock || hasInvalidQty
+//                   ? "Fix Cart Items"
+//                   : "Proceed to Checkout"}
+//               </button>
+
+//               <p
+//                 onClick={() => navigate("/products")}
+//                 className="text-center text-sm text-gray-500 mt-5 cursor-pointer hover:underline"
+//               >
+//                 Continue Shopping
+//               </p>
+//             </div>
+//           </div>
+//         )}
+//       </div>
+
+//       <Footer />
+//     </div>
+//   );
+// }
+
+// export default Cart;
+
+
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { Trash2, ShoppingBag } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Cart() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { cart, removeFromCart, updateQty } = useCart();
 
+  // ✅ FIXED subtotal (works for guest + logged in)
   const subtotal = cart.reduce((acc, item) => {
-    if (!item.product) return acc;
-    return acc + item.product.price * item.qty;
+    const product = item.product || item;
+    if (!product) return acc;
+
+    return acc + product.price * item.qty;
   }, 0);
 
-  const hasInvalidQty = cart.some(
-    (item) => item.qty > item.product?.countInStock,
-  );
+  // ✅ FIXED validations
+  const hasInvalidQty = cart.some((item) => {
+    const product = item.product || item;
+    return item.qty > product?.countInStock;
+  });
+
+  const hasOutOfStock = cart.some((item) => {
+    const product = item.product || item;
+    return product?.countInStock === 0;
+  });
 
   const shipping = 120;
   const total = subtotal + shipping;
-  const hasOutOfStock = cart.some((item) => item.product?.countInStock === 0);
+
   const handleCheckout = () => {
     if (!user) navigate("/login");
     else navigate("/checkout");
@@ -32,7 +234,9 @@ function Cart() {
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-8 py-16 flex-1">
-        <h1 className="text-4xl font-serif text-gray-800 mb-14">Your Cart</h1>
+        <h1 className="text-4xl font-serif text-gray-800 mb-14">
+          Your Cart
+        </h1>
 
         {cart.length === 0 ? (
           <div className="flex flex-col items-center py-20">
@@ -44,42 +248,43 @@ function Cart() {
             {/* LEFT */}
             <div className="col-span-2 space-y-6">
               {cart.map((item, index) => {
-                if (!item.product) return null;
+                const product = item.product || item; // 🔥 KEY FIX
+
+                if (!product) return null;
 
                 return (
                   <div
-                    key={item.product._id || index}
+                    key={product._id || index}
                     className="w-full bg-[#fbf7f4] rounded-2xl px-6 py-5 flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.04)]"
                   >
                     <div className="flex items-center gap-6">
                       <img
-                        src={item.product.images?.[0]}
-                        alt={item.product.name}
+                        src={product.images?.[0]}
+                        alt={product.name}
                         className="w-20 h-20 rounded-xl object-cover"
                       />
 
                       <div>
                         <p className="text-base font-medium text-gray-800">
-                          {item.product.name}
+                          {product.name}
                         </p>
 
-                        {/* ✅ NPR FIX */}
                         <p className="text-[#c07c52] text-sm mt-1">
-                          Rs {item.product.price}
+                          Rs {product.price}
                         </p>
 
                         <p className="text-xs text-gray-500">
-                          {item.product?.countInStock} available
+                          {product?.countInStock} available
                         </p>
 
-                        {item.product?.countInStock === 0 && (
+                        {product?.countInStock === 0 && (
                           <p className="text-red-500 text-xs mt-1">
                             Out of Stock
                           </p>
                         )}
 
-                        {item.qty === item.product?.countInStock &&
-                          item.product?.countInStock > 0 && (
+                        {item.qty === product?.countInStock &&
+                          product?.countInStock > 0 && (
                             <p className="text-orange-500 text-xs mt-1">
                               Maximum stock reached
                             </p>
@@ -89,8 +294,8 @@ function Cart() {
                           <button
                             onClick={() =>
                               updateQty(
-                                item.product._id,
-                                Math.max(1, item.qty - 1),
+                                product._id,
+                                Math.max(1, item.qty - 1)
                               )
                             }
                             className="w-9 h-9 rounded-full bg-[#efe7e2]"
@@ -103,18 +308,24 @@ function Cart() {
                           </span>
 
                           <button
-                            disabled={item.qty >= item.product.countInStock}
+                            disabled={item.qty >= product.countInStock}
                             onClick={() => {
-                              const stock = item.product?.countInStock || 0;
+                              const stock =
+                                product?.countInStock || 0;
 
                               if (item.qty < stock) {
-                                updateQty(item.product._id, item.qty + 1);
+                                updateQty(
+                                  product._id,
+                                  item.qty + 1
+                                );
                               } else {
-                                alert(`Only ${stock} items available`);
+                                alert(
+                                  `Only ${stock} items available`
+                                );
                               }
                             }}
                             className={`w-9 h-9 rounded-full ${
-                              item.qty >= item.product.countInStock
+                              item.qty >= product.countInStock
                                 ? "bg-gray-200 cursor-not-allowed"
                                 : "bg-[#efe7e2]"
                             }`}
@@ -126,7 +337,9 @@ function Cart() {
                     </div>
 
                     <button
-                      onClick={() => removeFromCart(item.product._id)}
+                      onClick={() =>
+                        removeFromCart(product._id)
+                      }
                       className="text-gray-400"
                     >
                       <Trash2 size={18} />
@@ -157,7 +370,9 @@ function Cart() {
 
                 <div className="flex justify-between text-base font-medium text-gray-800">
                   <span>Total</span>
-                  <span className="text-[#c07c52] text-lg">Rs {total}</span>
+                  <span className="text-[#c07c52] text-lg">
+                    Rs {total}
+                  </span>
                 </div>
               </div>
 

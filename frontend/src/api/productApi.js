@@ -15,16 +15,16 @@ API.interceptors.request.use((config) => {
   return config;
 });
 export const fetchProducts= async (params)=>{
-  const {data}= await API.get ("/api/products", {params});
+  const {data}= await API.get ("/products", {params});
   return data;
 };
 
 export const fetchProductById=async (id)=>{
-  const {data}=await API.get(`/api/products/${id}`);
+  const {data}=await API.get(`/products/${id}`);
   return data;
 }
 
 export const addReview=async (id, reviewData)=>{
-  const {data}=await API.post(`/api/products/${id}/reviews`,reviewData);
+  const {data}=await API.post(`/products/${id}/reviews`,reviewData);
   return data;
 }

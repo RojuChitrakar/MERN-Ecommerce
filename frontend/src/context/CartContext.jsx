@@ -103,7 +103,6 @@
 
 // export const useCart = () => useContext(CartContext);
 
-
 import { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import API from "../api";
@@ -140,9 +139,11 @@ export const CartProvider = ({ children }) => {
     // 🟢 GUEST USER
     if (!user) {
       try {
-        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        let localCart = JSON.parse(localStorage.getItem("cart")) || [];
 
-        const exist = cart.find((item) => item._id === product._id);
+        const exist = localCart.find(
+          (item) => item.product._id === product._id
+        );
 
         if (exist) {
           const newQty = exist.qty + qty;
@@ -159,11 +160,14 @@ export const CartProvider = ({ children }) => {
             return;
           }
 
-          cart.push({ ...product, qty });
+          localCart.push({
+            product,
+            qty,
+          });
         }
 
-        localStorage.setItem("cart", JSON.stringify(cart));
-        setCart(cart);
+        localStorage.setItem("cart", JSON.stringify(localCart));
+        setCart(localCart);
       } catch (error) {
         console.error("Guest cart error:", error);
       }
@@ -189,11 +193,14 @@ export const CartProvider = ({ children }) => {
   const removeFromCart = async (id) => {
     // 🟢 GUEST USER
     if (!user) {
-      let cart = JSON.parse(localStorage.getItem("cart")) || [];
-      cart = cart.filter((item) => item._id !== id);
+      let localCart = JSON.parse(localStorage.getItem("cart")) || [];
 
-      localStorage.setItem("cart", JSON.stringify(cart));
-      setCart(cart);
+      localCart = localCart.filter(
+        (item) => item.product._id !== id
+      );
+
+      localStorage.setItem("cart", JSON.stringify(localCart));
+      setCart(localCart);
       return;
     }
 
@@ -210,14 +217,14 @@ export const CartProvider = ({ children }) => {
   const updateQty = async (id, qty) => {
     // 🟢 GUEST USER
     if (!user) {
-      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      let localCart = JSON.parse(localStorage.getItem("cart")) || [];
 
-      cart = cart.map((item) =>
-        item._id === id ? { ...item, qty } : item
+      localCart = localCart.map((item) =>
+        item.product._id === id ? { ...item, qty } : item
       );
 
-      localStorage.setItem("cart", JSON.stringify(cart));
-      setCart(cart);
+      localStorage.setItem("cart", JSON.stringify(localCart));
+      setCart(localCart);
       return;
     }
 
@@ -237,13 +244,36 @@ export const CartProvider = ({ children }) => {
     localStorage.removeItem("cart");
   };
 
+  // ✅ LOAD + MERGE CART
   useEffect(() => {
-    if (user && !user.isAdmin) {
-      fetchCart();
-    } else {
-      const localCart = JSON.parse(localStorage.getItem("cart")) || [];
-      setCart(localCart);
-    }
+    const syncCart = async () => {
+      if (user && !user.isAdmin) {
+        // 🔥 MERGE guest cart → backend
+        const guestCart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        if (guestCart.length > 0) {
+          try {
+            for (let item of guestCart) {
+              await API.post("/users/cart", {
+                productId: item.product._id,
+                qty: item.qty,
+              });
+            }
+
+            localStorage.removeItem("cart");
+          } catch (error) {
+            console.error("Cart sync error:", error);
+          }
+        }
+
+        fetchCart();
+      } else {
+        const localCart = JSON.parse(localStorage.getItem("cart")) || [];
+        setCart(localCart);
+      }
+    };
+
+    syncCart();
   }, [user]);
 
   return (

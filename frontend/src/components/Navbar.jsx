@@ -143,7 +143,7 @@ function Navbar() {
                     onClick={() => navigate("/profile")}
                     className="block w-full text-left px-2 py-2 hover:bg-[#f7ebe8] rounded"
                   >
-                    Profile
+                    Account
                   </button>
 
                   <button

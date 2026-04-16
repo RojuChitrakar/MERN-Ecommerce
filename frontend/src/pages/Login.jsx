@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock , Eye, EyeOff} from "lucide-react";
 
 function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-
+  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -72,7 +72,7 @@ function Login() {
           </div>
 
           {/* PASSWORD */}
-          <div>
+          {/* <div>
             <label className="text-sm text-gray-600">Password</label>
 
             <div className="flex items-center border border-gray-200 rounded-full px-4 py-2 mt-1 focus-within:border-[#c07c52] transition">
@@ -87,7 +87,34 @@ function Login() {
                 }
               />
             </div>
-          </div>
+          </div> */}
+
+          <div>
+  <label className="text-sm text-gray-600">Password</label>
+
+  <div className="flex items-center border border-gray-200 rounded-full px-4 py-2 mt-1 focus-within:border-[#c07c52] transition">
+    <Lock size={16} className="text-gray-400 mr-2" />
+
+    <input
+      type={showPassword ? "text" : "password"}
+      placeholder="••••••••"
+      className="w-full outline-none bg-transparent text-sm"
+      value={form.password}
+      onChange={(e) =>
+        setForm({ ...form, password: e.target.value })
+      }
+    />
+
+    {/* 👁️ TOGGLE */}
+    <button
+      type="button"
+      onClick={() => setShowPassword(!showPassword)}
+      className="ml-2 text-gray-400 hover:text-[#c07c52]"
+    >
+      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+    </button>
+  </div>
+</div>
 
           {/* BUTTON */}
           <button

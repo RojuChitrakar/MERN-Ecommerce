@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
-import { Mail, Lock, User, Phone } from "lucide-react";
+import { Mail, Lock, User, Phone , Eye, EyeOff} from "lucide-react";
 
 function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-
+   const [showPassword, setShowPassword] = useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -128,32 +129,56 @@ function Register() {
           </div>
 
           {/* PASSWORD */}
-          <div className="flex items-center border border-gray-200 rounded-full px-4 py-2 focus-within:border-[#c07c52] transition">
-            <Lock size={16} className="text-gray-400 mr-2" />
-            <input
-              type="password"
-              placeholder="Password"
-              className="w-full outline-none text-sm"
-              value={form.password}
-              onChange={(e) =>
-                setForm({ ...form, password: e.target.value })
-              }
-            />
-          </div>
+       <div className="flex items-center border border-gray-200 rounded-full px-4 py-2 focus-within:border-[#c07c52] transition">
+  <Lock size={16} className="text-gray-400 mr-2" />
+
+  <input
+    type={showPassword ? "text" : "password"}
+    placeholder="Password"
+    className="w-full outline-none text-sm"
+    value={form.password}
+    onChange={(e) =>
+      setForm({ ...form, password: e.target.value })
+    }
+  />
+
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="ml-2 text-gray-400 hover:text-[#c07c52]"
+  >
+    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+  </button>
+</div>
 
           {/* CONFIRM PASSWORD */}
-          <div className="flex items-center border border-gray-200 rounded-full px-4 py-2 focus-within:border-[#c07c52] transition">
-            <Lock size={16} className="text-gray-400 mr-2" />
-            <input
-              type="password"
-              placeholder="Confirm password"
-              className="w-full outline-none text-sm"
-              value={form.confirmPassword}
-              onChange={(e) =>
-                setForm({ ...form, confirmPassword: e.target.value })
-              }
-            />
-          </div>
+       <div className="flex items-center border border-gray-200 rounded-full px-4 py-2 focus-within:border-[#c07c52] transition">
+  <Lock size={16} className="text-gray-400 mr-2" />
+
+  <input
+    type={showConfirmPassword ? "text" : "password"}
+    placeholder="Confirm password"
+    className="w-full outline-none text-sm"
+    value={form.confirmPassword}
+    onChange={(e) =>
+      setForm({ ...form, confirmPassword: e.target.value })
+    }
+  />
+
+  <button
+    type="button"
+    onClick={() =>
+      setShowConfirmPassword(!showConfirmPassword)
+    }
+    className="ml-2 text-gray-400 hover:text-[#c07c52]"
+  >
+    {showConfirmPassword ? (
+      <EyeOff size={16} />
+    ) : (
+      <Eye size={16} />
+    )}
+  </button>
+</div>
 
           {/* BUTTON */}
           <button

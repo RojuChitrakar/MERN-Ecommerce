@@ -4,7 +4,7 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "../utils/axios.js";
+import API from "../api";
 
 function Checkout() {
   const { cart, clearCart } = useCart();
@@ -71,7 +71,7 @@ function Checkout() {
     }
 
     try {
-      const { data } = await axios.post("/orders", {
+      const { data } = await API.post("/orders", {
         cartItems: cart,
         shippingAddress: {
           fullName: `${firstName} ${lastName}`,

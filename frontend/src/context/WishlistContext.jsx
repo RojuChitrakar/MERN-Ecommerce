@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import API from "../api";
 import { useAuth } from "./AuthContext";
 const WishlistContext = createContext();
 
@@ -9,7 +9,7 @@ export const WishlistProvider = ({ children }) => {
   // ✅ FETCH FROM BACKEND
   const fetchWishlist = async () => {
     try {
-      const { data } = await axios.get("/api/users/wishlist");
+      const { data } = await API.get("/users/wishlist");
       setWishlist(data);
     } catch (error) {
       console.log(error);
@@ -39,7 +39,7 @@ const { user } = useAuth();
     }
 
     // API call
-    await axios.post(`/api/users/wishlist/${product._id}`);
+    await API.post(`/users/wishlist/${product._id}`);
 
   } catch (error) {
     console.log("WISHLIST ERROR:", error.response || error);

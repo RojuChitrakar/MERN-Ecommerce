@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "../utils/axios.js";
+import API from "../api";
 
 function AdminProducts() {
   const [products, setProducts] = useState([]);
@@ -24,7 +24,7 @@ function AdminProducts() {
   // 🔥 FETCH PRODUCTS
   const fetchProducts = async () => {
     try {
-      const { data } = await axios.get("/products");
+      const { data } = await API.get("/products");
       setProducts(data);
     } catch (error) {
       console.error("FETCH ERROR:", error.response?.data || error.message);
@@ -68,7 +68,7 @@ function AdminProducts() {
 
       images.forEach((img) => formData.append("images", img));
 
-      const { data } = await axios.post("/products", formData, {
+      const { data } = await API.post("/products", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -118,7 +118,7 @@ function AdminProducts() {
 
       images.forEach((img) => formData.append("images", img));
 
-      await axios.put(`/products/${editingProduct._id}`, formData);
+      await API.put(`/products/${editingProduct._id}`, formData);
 
       resetForm();
       setShowModal(false);
@@ -131,7 +131,7 @@ function AdminProducts() {
   // ❌ DELETE
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this product?")) return;
-    await axios.delete(`/products/${id}`);
+    await API.delete(`/products/${id}`);
     fetchProducts();
   };
 

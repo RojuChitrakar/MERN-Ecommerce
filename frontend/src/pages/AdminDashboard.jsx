@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import axios from "../utils/axios";
+import API from "../api";
 import AdminProducts from "./AdminProducts";
 import AdminOrders from "./AdminOrders";
 
@@ -22,7 +22,7 @@ function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const { data } = await axios.get("/orders/full-stats");
+        const { data } = await API.get("/orders/full-stats");
         setStats(data);
       } catch (error) {
         console.error(error);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "../utils/axios";
+import API from "../api";
 
 function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -8,7 +8,7 @@ function AdminOrders() {
 
   const fetchOrders = async () => {
     try {
-      const { data } = await axios.get("/orders");
+      const { data } = await API.get("/orders");
       setOrders(data);
     } catch (error) {
       console.error("ORDER FETCH ERROR:", error.message);
@@ -21,7 +21,7 @@ function AdminOrders() {
 
   const markDelivered = async (id) => {
     try {
-      await axios.put(`/orders/${id}/deliver`);
+      await API.put(`/orders/${id}/deliver`);
       fetchOrders();
     } catch (error) {
       console.error("DELIVER ERROR:", error.message);

@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Phone, Package, MapPin } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
-import axios from "../utils/axios.js";
+import API from "../api";
 
 function Profile() {
   const { user: authUser, logout } = useAuth();
@@ -53,7 +53,7 @@ function Profile() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const { data } = await axios.get("/orders/my");
+        const { data } = await API.get("/orders/my");
         setOrders(data);
       } catch (error) {
         console.error("ORDER ERROR:", error);
@@ -64,7 +64,7 @@ function Profile() {
 
   const saveProfile = async () => {
     try {
-      const { data } = await axios.put("/users/profile", {
+      const { data } = await API.put("/users/profile", {
         ...user,
         address,
       });

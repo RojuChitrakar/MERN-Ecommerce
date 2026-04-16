@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
-import axios from "axios";
+import API from "../api";
 
 const CartContext = createContext();
 
@@ -10,7 +10,7 @@ export const CartProvider = ({ children }) => {
   // ✅ FETCH CART FROM BACKEND
   const fetchCart = async () => {
   try {
-    const { data } = await axios.get("/api/users/cart");
+    const { data } = await API.get("/users/cart");
 
     // 🔥 FIX STOCK MISMATCH
     const fixedCart = data.map((item) => {
@@ -36,7 +36,7 @@ export const CartProvider = ({ children }) => {
   // ✅ ADD TO CART
   const addToCart = async (product, qty = 1) => {
     try {
-      const { data } = await axios.post("/api/users/cart", {
+      const { data } = await API.post("/users/cart", {
         productId: product._id,
         qty,
       });
@@ -52,7 +52,7 @@ export const CartProvider = ({ children }) => {
   // ✅ REMOVE FROM CART
   const removeFromCart = async (id) => {
     try {
-      const { data } = await axios.delete(`/api/users/cart/${id}`);
+      const { data } = await API.delete(`/users/cart/${id}`);
       setCart(data);
     } catch (error) {
       console.error("Remove error:", error);
@@ -62,7 +62,7 @@ export const CartProvider = ({ children }) => {
   // ✅ UPDATE QUANTITY
   const updateQty = async (id, qty) => {
     try {
-      const { data } = await axios.put(`/api/users/cart/${id}`, { qty });
+      const { data } = await API.put(`/users/cart/${id}`, { qty });
       setCart(data);
     } catch (error) {
   console.error("Update qty error:", error);

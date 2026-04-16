@@ -1,19 +1,21 @@
-import axios from "axios";
 
-const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true
-});
+import API from "../api.js";
 
-API.interceptors.request.use((config) => {
-  const user = JSON.parse(localStorage.getItem("userInfo"));
+// const API = axios.create({
+//   baseURL: import.meta.env.VITE_API_URL,
+//   withCredentials: true
+// });
 
-  if (user?.token) {
-    config.headers.Authorization = `Bearer ${user.token}`;
-  }
+// API.interceptors.request.use((config) => {
+//   const user = JSON.parse(localStorage.getItem("userInfo"));
 
-  return config;
-});
+//   if (user?.token) {
+//     config.headers.Authorization = `Bearer ${user.token}`;
+//   }
+
+//   return config;
+// });
+
 export const fetchProducts= async (params)=>{
   const {data}= await API.get ("/products", {params});
   return data;

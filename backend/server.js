@@ -33,9 +33,13 @@ const startServer = async () => {
   app.use("/api/orders", orderRoutes);
   const frontendPath = path.join(__dirname, "dist");
   app.use(express.static(frontendPath));
-  app.get("*", (req, res) => {
-    res.sendFile(path.resolve(frontendPath, "index.html"));
-  });
+//   app.get("/*", (req, res) => {
+//   res.sendFile(path.resolve(frontendPath, "index.html"));
+// });
+
+app.use((req, res) => {
+  res.sendFile(path.resolve(frontendPath, "index.html"));
+});
 
   // ERROR HANDLER
   app.use((err, req, res, next) => {
